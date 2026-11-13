@@ -74,6 +74,13 @@ td.n{width:44px;color:var(--mut)}td.nm{font-weight:600}
 .gb{background:#f8fafc;border:1px solid var(--bd);border-radius:10px;padding:8px 10px;text-align:center}
 .gb b{display:block;font-size:22px;color:var(--p2)}.gb small{display:block;color:var(--mut);font-size:11.5px}
 .syn{font-size:12.5px;background:rgba(255,255,255,.18);border-radius:999px;padding:2px 10px}
+.tot{font-size:17px;font-weight:800;color:var(--p2)}
+.cfgg{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin:10px 0}.cfgg label{margin:0}
+.cfgg .gb{text-align:right}.cfgg .gb b{font-size:15px;margin-bottom:4px}.cfgg .gb label{margin-bottom:6px}
+details.cfg>summary{cursor:pointer;font-weight:700;font-size:16px}
+.scl{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}.scl input{width:110px;font-weight:700;text-align:center}
+.mcell .w{color:var(--warn)}
+.chip.sumok{background:#dcfce7;color:#166534;font-weight:600}.chip.sumbad{background:#fee2e2;color:#991b1b;font-weight:600}
 .print-only{display:none}
 @media print{.no-print,.top,.tabs{display:none!important}.print-only{display:block;margin-bottom:10px}body{background:#fff}.card{border:0;padding:0}.wrap{max-width:none;padding:0}}
 </style>
@@ -161,7 +168,7 @@ const baseDB=()=>({v:1,cfgStamp:0,epoch:0,settings:{college:'کۆلێجی تەک
 function freshDB(){const d=baseDB();d.admin={username:'admin',pw:'cb90ff4862b8cd6e250d612464931a44f2ee76b5944215f1f21cd939a766c0cc'};return d}
 function loadLS(){try{const t=localStorage.getItem(KEY);return t?JSON.parse(t):null}catch(e){return null}}
 let DB,SESSION=null,STUDENT_ONLY=false;
-const UI={gr:null,gsm:{stage:'',course:'',q:'',from:'',to:''},tab:'home',att:null,rep:{stage:'',course:'',status:'',q:'',from:'',to:'',sort:'course'},cf:null,sf:{stage:'',q:''},sess:{course:''},gs:null,gmsg:'',mcb:null};
+const UI={gr:null,gsm:{stage:'',course:'',q:'',from:'',to:''},tab:'home',att:null,rep:{stage:'',course:'',status:'',q:'',from:'',to:'',sort:'course'},cf:null,sf:{stage:'',q:''},sess:{course:''},gs:null,gmsg:'',mcb:null,md:null,fn:{stage:'',course:'',q:''},cfgOpen:false};
 function save(){
   if(STUDENT_ONLY)return;
   if(ONLINE){
@@ -288,8 +295,8 @@ function studentReport(s){
   }).join('');
   return '<section class="card"><h3>'+esc(s.name)+'</h3><div class="mut">'+stageName(s.stage)+(s.group?' — گروپ '+esc(s.group):'')+'</div></section>'+(cards||'<div class="card empty">هێشتا هیچ وانەیەک بۆ ئەم قۆناغە دیاری نەکراوە.</div>');
 }
-const ADMIN_TABS=[['home','🏠 سەرەتا'],['attend','✍️ وەرگرتنی غیاب'],['report','📊 ڕاپۆرتەکان'],['grades','📝 نمرەدانان'],['gsum','🏅 کۆی نمرەکان'],['sessions','🗓️ تۆماری ڕۆژانە'],['teachers','👩‍🏫 مامۆستایان'],['students','🎓 خوێندکاران'],['courses','📚 وانەکان'],['settings','⚙️ ڕێکخستن و داتا']];
-const TEACH_TABS=[['attend','✍️ وەرگرتنی غیاب'],['report','📊 ڕاپۆرتی وانەکانم'],['grades','📝 نمرەدانان'],['gsum','🏅 کۆی نمرەکان'],['sessions','🗓️ تۆمارەکانم'],['data','💾 ناردنی غیابات']];
+const ADMIN_TABS=[['home','🏠 سەرەتا'],['attend','✍️ وەرگرتنی غیاب'],['report','📊 ڕاپۆرتەکان'],['grades','📝 نمرەدانان'],['gsum','🏅 کۆی نمرەکان'],['mid','🧪 نمرەی میدتێرم'],['final','🎯 نمرەی کۆتایی'],['sessions','🗓️ تۆماری ڕۆژانە'],['teachers','👩‍🏫 مامۆستایان'],['students','🎓 خوێندکاران'],['courses','📚 وانەکان'],['settings','⚙️ ڕێکخستن و داتا']];
+const TEACH_TABS=[['attend','✍️ وەرگرتنی غیاب'],['report','📊 ڕاپۆرتی وانەکانم'],['grades','📝 نمرەدانان'],['gsum','🏅 کۆی نمرەکان'],['mid','🧪 نمرەی میدتێرم'],['final','🎯 نمرەی کۆتایی'],['sessions','🗓️ تۆمارەکانم'],['data','💾 ناردنی غیابات']];
 function shell(tabs){
   if(ONLINE)tabs=tabs.filter(t=>t[0]!=='data');
   if(!tabs.some(t=>t[0]===UI.tab))UI.tab=tabs[0][0];
@@ -420,10 +427,10 @@ function stuTable(l){
 
 /* ---------- وانەکان ---------- */
 function coursesBody(){
-  const cf=UI.cf=UI.cf||{id:'',name:'',type:'theory',stage:1,teacherId:'',gt:{}};
+  const cf=UI.cf=UI.cf||{id:'',name:'',type:'theory',stage:1,teacherId:'',dual:false,gt:{}};
   const ts=DB.teachers.slice().sort(byName),tsel=(v,k)=>'<select data-chg="cf" data-k="'+k+'"><option value="">— دیاری نەکراو —</option>'+ts.map(t=>'<option value="'+t.id+'"'+(t.id===v?' selected':'')+'>'+esc(t.name)+'</option>').join('')+'</select>';
   const groups=groupsOfStage(cf.stage);
-  const dyn=cf.type==='theory'?'<label>مامۆستای وانە'+tsel(cf.teacherId,'teacherId')+'</label>'
+  const dyn=cf.type==='theory'?'<label>مامۆستای وانە'+tsel(cf.teacherId,'teacherId')+'</label><label style="display:flex;gap:8px;align-items:center;color:var(--tx)"><input type="checkbox" style="width:auto;margin:0" data-chg="cf" data-k="dual"'+(cf.dual?' checked':'')+'> ئەم وانەیە پراکتیکیشی هەیە (دابەشکردنی نمرەی تیۆری + پراکتیکی)</label><div class="hint" style="margin:-4px 0 10px">بۆ ئەم جۆرە وانەیە دوو وانە دروست بکە بە هەمان ناو و هەمان قۆناغ: یەکێکیان تیۆری (ئەم تیکە بکە) و یەکێکیان پراکتیکی.</div>'
     :(groups.length?'<div class="card" style="background:#f8fafc"><b>مامۆستا بۆ هەر گروپێک</b>'+groups.map(g=>'<label>گروپ '+esc(g)+tsel(cf.gt[g]||'','gt:'+g)+'</label>').join('')+'</div>':'<div class="alert">هیچ گروپێک بۆ ئەم قۆناغە نییە. سەرەتا لە بەشی «خوێندکاران» گروپ بۆ خوێندکارەکان دیاری بکە.</div>');
   return '<div class="card"><h3>'+(cf.id?'✏️ دەستکاری وانە':'➕ وانەی نوێ')+'</h3><form data-form="course"><div class="row"><label class="grow">ناوی وانە<input name="name" data-part="cf" data-k="name" value="'+esc(cf.name)+'" required></label>'+
   '<label>جۆر<select data-chg="cf" data-k="type"><option value="theory"'+(cf.type==='theory'?' selected':'')+'>تیۆری (هەموو ناوەکان)</option><option value="practical"'+(cf.type==='practical'?' selected':'')+'>پراکتیکی (بە گروپ)</option></select></label>'+
@@ -449,7 +456,7 @@ function dataBody(){
   return '<div class="card"><h3>📤 ناردنی غیابات بۆ سەرۆکی بەش</h3><p>دوای وەرگرتنی غیاب، ئەم فایلە دابەزێنە و بیدە بە سەرۆکی بەش (واتس‌ئاپ، ئیمەیڵ، ...).</p><button class="btn pri" data-act="exTeacherJson">⬇️ دابەزاندنی فایلی غیابەکانم</button></div>'+
   '<div class="card"><h3>📥 وەرگرتنی داتای نوێ لە سەرۆکی بەش</h3><p>ئەگەر سەرۆکی بەش وانە یان خوێندکاری گۆڕی و فایلێکی نوێی ناردبوو، لێرە بیهێنە.</p><button class="btn" data-act="importMerge">هێنانی فایل</button></div>';
 }
-const BODY={grades:gradesBody,gsum:gsumBody,home:homeBody,attend:attendBody,report:reportBody,sessions:sessionsBody,teachers:teachersBody,students:studentsBody,courses:coursesBody,settings:settingsBody,data:dataBody};
+const BODY={grades:gradesBody,gsum:gsumBody,mid:midBody,final:finalBody,home:homeBody,attend:attendBody,report:reportBody,sessions:sessionsBody,teachers:teachersBody,students:studentsBody,courses:coursesBody,settings:settingsBody,data:dataBody};
 
 /* ================= نمرەکان ================= */
 const GT=[['seminar','سیمینار'],['quiz','کویز'],['assignment','ئەسایمێنت'],['report','ڕاپۆرت']];
@@ -574,7 +581,7 @@ FORMS.login=f=>{
   try{sessionStorage.setItem('nurs_sess',JSON.stringify(SESSION))}catch(e){}
   UI.tab=isAdmin()?'home':'attend';UI.att=null;render();
 };
-ACTS.logout=()=>{SESSION=null;UI.att=null;UI.gr=null;try{sessionStorage.removeItem('nurs_sess')}catch(e){}if(ONLINE){DB=baseDB();LOADED=false;PENDING=false;try{localStorage.removeItem(KEY2)}catch(e){}}render()};
+ACTS.logout=()=>{SESSION=null;UI.att=null;UI.gr=null;UI.md=null;try{sessionStorage.removeItem('nurs_sess')}catch(e){}if(ONLINE){DB=baseDB();LOADED=false;PENDING=false;try{localStorage.removeItem(KEY2)}catch(e){}}render()};
 ACTS.guest=()=>{SESSION={role:'guest'};UI.gs=null;UI.gmsg='';render()};
 ACTS.toLogin=()=>{SESSION=null;if(ONLINE)DB=baseDB();render()};
 FORMS.lookup=f=>{
@@ -764,20 +771,20 @@ ACTS.delS=a=>{
 CHG.cf=el=>{
   const k=el.dataset.k;
   if(k.startsWith('gt:'))UI.cf.gt[k.slice(3)]=el.value;
-  else UI.cf[k]=k==='stage'?+el.value:el.value;
+  else UI.cf[k]=k==='stage'?+el.value:k==='dual'?el.checked:el.value;
   render();
 };
 INP.cf=el=>{UI.cf.name=el.value};
 FORMS.course=f=>{
   const cf=UI.cf,name=f.elements.name.value.trim();if(!name)return;
-  const c={id:cf.id||uid(),name,type:cf.type,stage:cf.stage};
+  const c={id:cf.id||uid(),name,type:cf.type,stage:cf.stage,dual:cf.type==='theory'&&!!cf.dual};
   if(cf.type==='theory'){c.teacherId=cf.teacherId||'';c.groupTeachers={}}
   else{c.teacherId='';c.groupTeachers={};Object.keys(cf.gt).forEach(g=>{if(cf.gt[g]&&groupsOfStage(cf.stage).includes(g))c.groupTeachers[g]=cf.gt[g]})}
   const i=DB.courses.findIndex(x=>x.id===c.id);
   if(i>=0)DB.courses[i]=c;else DB.courses.push(c);
   UI.cf=null;cfg();toast('وانە پاشەکەوت کرا ✓');render();
 };
-ACTS.editC=a=>{const c=getCourse(a.dataset.id);UI.cf={id:c.id,name:c.name,type:c.type,stage:c.stage,teacherId:c.teacherId||'',gt:Object.assign({},c.groupTeachers)};render();window.scrollTo(0,0)};
+ACTS.editC=a=>{const c=getCourse(a.dataset.id);UI.cf={id:c.id,name:c.name,type:c.type,stage:c.stage,teacherId:c.teacherId||'',dual:!!c.dual,gt:Object.assign({},c.groupTeachers)};render();window.scrollTo(0,0)};
 ACTS.cancelCf=()=>{UI.cf=null;render()};
 ACTS.delC=a=>{
   const c=getCourse(a.dataset.id);
@@ -831,6 +838,286 @@ $('#impf').addEventListener('change',e=>{
   rd.readAsText(file);
 });
 
+/* ================= میدتێرم + نمرەی کۆتایی ================= */
+/* نمرەی میدتێرم وەک ڕێژە (٠–١٠٠) پاشەکەوت دەکرێت لەناو DB.grades بە type='midterm'، بۆیە بە هەمان هاوکاتکردن کار دەکات
+   و ئەگەر ماوەی نمرەدانان یان نمرەی ئامانج بگۆڕێت، نمرە پاشەکەوتکراوەکان دروست دەمێننەوە. */
+const PROF=[['solo','تەنها تیۆری'],['theory','تیۆری (لەگەڵ پراکتیکی)'],['practical','پراکتیکی (لەگەڵ تیۆری)']];
+const profName=k=>(PROF.find(x=>x[0]===k)||['',k])[1];
+const mkP=(mid,att,q,a,r,s)=>({mid,att,acts:{quiz:{w:q},assignment:{w:a},report:{w:r},seminar:{w:s}}});
+const GC_DEF={total:50,rndMid:0,rndTot:0,attCut:[30,60,100],p:{solo:mkP(25,5,5,5,5,5),theory:mkP(10,2,4,2,2,0),practical:mkP(10,3,6,3,3,5)}};
+function GCfg(){
+  const u=(DB.settings&&DB.settings.gcfg)||{},up=u.p||{},P={};
+  PROF.forEach(([k])=>{
+    const d=GC_DEF.p[k],x=up[k]||{},acts={};
+    GT.forEach(t=>{
+      const xa=(x.acts||{})[t[0]]||{},w=xa.w!=null?+xa.w:d.acts[t[0]].w,raw=xa.raw>0?+xa.raw:null;
+      acts[t[0]]={w,raw:raw==null?w:raw,rawSet:raw!=null};
+    });
+    P[k]={mid:x.mid!=null?+x.mid:d.mid,att:x.att!=null?+x.att:d.att,acts};
+  });
+  const ac=Array.isArray(u.attCut)&&u.attCut.length===3&&u.attCut.every(x=>x>=0&&x<=100)?u.attCut.map(Number):GC_DEF.attCut;
+  return {total:u.total>0?+u.total:50,rndMid:+u.rndMid||0,rndTot:+u.rndTot||0,attCut:ac,p:P};
+}
+const r2=n=>Math.round(n*100)/100;
+const rndTo=(v,st)=>st>0?Math.round(v/st)*st:v;
+const profSum=P=>r2(P.mid+P.att+GT.reduce((t,x)=>t+P.acts[x[0]].w,0));
+function gcErrors(C){
+  const e=[],s=profSum(C.p.solo),d=r2(profSum(C.p.theory)+profSum(C.p.practical));
+  if(Math.abs(s-C.total)>1e-9)e.push('وانەی تەنها تیۆری: کۆی بەشەکان '+num(s)+'ـە و دەبێت '+num(C.total)+' بێت');
+  if(Math.abs(d-C.total)>1e-9)e.push('وانەی تیۆری+پراکتیکی: کۆی تیۆری ('+num(profSum(C.p.theory))+') + پراکتیکی ('+num(profSum(C.p.practical))+') = '+num(d)+' و دەبێت '+num(C.total)+' بێت');
+  return e;
+}
+const profOf=c=>c.type==='practical'?'practical':(c.dual?'theory':'solo');
+function pairOf(c){
+  const nm=x=>String(x.name).trim();
+  if(c.type==='practical')return DB.courses.find(x=>x.type==='theory'&&x.dual&&x.stage===c.stage&&nm(x)===nm(c))||null;
+  if(c.dual)return DB.courses.find(x=>x.type==='practical'&&x.stage===c.stage&&nm(x)===nm(c))||null;
+  return null;
+}
+const midConv=(p,P,C)=>r2(Math.min(P.mid,rndTo(p/100*P.mid,C.rndMid)));
+const attCutOf=(a,C)=>a<=0?0:C.attCut[Math.min(a,C.attCut.length)-1];
+const attVal=(a,P,C)=>r2(P.att*(1-attCutOf(a,C)/100));
+function midIndex(){const ix={};liveGrades().forEach(g=>{if(g.type==='midterm')ix[g.courseId+'|'+g.sid]=g.score});return ix}
+function mdScale(){let s=100;try{const v=parseFloat(localStorage.getItem('nurs_mscale'));if(v>0)s=v}catch(e){}return s}
+
+/* ---------- نمرەی میدتێرم ---------- */
+function mvText(raw){
+  const G=UI.md,v=parseFloat(String(raw==null?'':raw).replace(',','.'));
+  if(raw===undefined||raw===null||String(raw).trim()===''||isNaN(v))return '<span class="mut">—</span>';
+  if(v<0||v>G.scale)return '<span style="color:var(--fail)">⚠️ دەرەوەی ماوەی نمرە</span>';
+  const p=v/G.scale*100;
+  return '<b>'+num(midConv(p,G.P,G.C))+' / '+num(G.P.mid)+'</b><small>'+num(r2(p))+'%</small>';
+}
+function mRow(s,i){
+  const G=UI.md,v=G.vals[s.id];
+  return '<tr><td class="n">'+(i+1)+'</td><td class="nm">'+esc(s.name)+'</td><td class="mut">'+esc(s.code)+'</td>'+
+  '<td><input class="gin" type="number" step="any" min="0" max="'+G.scale+'" inputmode="decimal" dir="ltr" data-part="md" data-sid="'+s.id+'" value="'+esc(v==null?'':v)+'"></td>'+
+  '<td class="mcell" id="mv-'+s.id+'">'+mvText(v)+'</td></tr>';
+}
+function midBody(){
+  const courses=myCourses();
+  if(!courses.length)return '<div class="card empty">'+(isAdmin()?'هیچ وانەیەک تۆمار نەکراوە. سەرەتا لە بەشی «وانەکان» وانە زیاد بکە.':'هیچ وانەیەکت بۆ دیاری نەکراوە. داوا لە سەرۆکی بەش بکە وانەکانت بۆ دیاری بکات.')+'</div>';
+  const C=GCfg();
+  const G=UI.md=UI.md||{courseId:'',group:'',scale:mdScale(),vals:{},key:null,dirty:false};
+  if(!courses.some(c=>c.id===G.courseId)){G.courseId=courses[0].id;G.group=''}
+  const c=getCourse(G.courseId);let groups=[];
+  if(c.type==='practical'){groups=myGroups(c);if(!groups.includes(G.group))G.group=groups[0]||''}else G.group='';
+  const P=C.p[profOf(c)];G.P=P;G.C=C;
+  const list=c.type==='practical'&&!G.group?[]:courseStudents(c,G.group||null);
+  const key=G.courseId+'|'+G.group;
+  const cur={};
+  liveGrades().forEach(g=>{if(g.courseId===c.id&&g.type==='midterm')cur[g.sid]=g});
+  if(G.key!==key){G.vals={};list.forEach(s=>{if(cur[s.id])G.vals[s.id]=num(r2(cur[s.id].score*G.scale/100))});G.key=key;G.dirty=false}
+  G.list=list;
+  const saved=list.filter(s=>cur[s.id]).length;
+  const direct=Math.abs(G.scale-P.mid)<1e-9;
+  return '<div class="card"><div class="row"><label class="grow">وانە<select id="md-course" data-chg="md">'+courses.map(x=>'<option value="'+x.id+'"'+(x.id===c.id?' selected':'')+'>'+esc(x.name)+' — '+typeName(x.type)+' — '+stageName(x.stage)+'</option>').join('')+'</select></label>'+
+  (c.type==='practical'?'<label>گروپ<select id="md-group" data-chg="md">'+groups.map(g=>'<option'+(g===G.group?' selected':'')+' value="'+esc(g)+'">'+esc(g)+'</option>').join('')+'</select></label>':'')+'</div></div>'+
+  '<div class="datebar" style="background:linear-gradient(135deg,#7c3aed,#4f46e5)"><span class="dl">🧪 نمرەکان لەسەر چەند دەنووسیت؟</span>'+
+  '<input type="number" id="md-scale" data-chg="md" step="any" min="1" dir="ltr" value="'+G.scale+'">'+
+  '<span class="dn">← دەگۆڕدرێت بۆ نمرەی لەسەر '+num(P.mid)+'</span></div>'+
+  '<div class="card"><div class="scl"><button class="btn sec" data-act="mdScale" data-s="100">لەسەر ١٠٠ بنووسە</button><button class="btn sec" data-act="mdScale" data-s="'+P.mid+'">ڕاستەوخۆ لەسەر '+num(P.mid)+' بنووسە (بێ گۆڕین)</button><button class="btn pri" data-act="saveMd" style="margin-right:auto">💾 پاشەکەوتکردنی نمرەکان</button></div>'+
+  '<div class="chips"><span class="chip">کۆی خوێندکار: <b>'+list.length+'</b></span><span class="chip ok">تۆمارکراو: <b>'+saved+'</b></span><span class="chip">'+(c.type==='theory'?'تیۆری — '+stageName(c.stage):'پراکتیکی — گروپ '+esc(G.group))+'</span><span class="chip">دابەشکردن: <b>'+profName(profOf(c))+' — میدتێرم '+num(P.mid)+' نمرە</b></span></div>'+
+  '<div class="hint">'+(direct?'ئێستا ماوەی نمرەدانان و نمرەی ئامانج یەکسانن ('+num(P.mid)+')، بۆیە هیچ گۆڕینێک ناکرێت. ':'هەر نمرەیەک لەسەر <b>'+num(G.scale)+'</b> بنووسیت خۆی بە ئۆتۆ دەگۆڕدرێت بۆ <b>'+num(P.mid)+'</b>: نمرە ÷ '+num(G.scale)+' × '+num(P.mid)+'. ')+
+  (isAdmin()?'نمرەی ئامانج لە <a href="#" data-act="goCfg">دابەشکردنی نمرەی کۆتایی</a> دەگۆڕدرێت.':'نمرەی ئامانج سەرۆکی بەش دیاری دەکات.')+
+  ' ئەگەر ماوەی نمرەدانان بگۆڕیت، ئەو نمرانەی نووسیوتن بە ڕێژە دەگۆڕدرێن. خانەی بەتاڵ تۆمار ناکرێت.</div></div>'+
+  '<div class="card tbl"><table><thead><tr><th>#</th><th>ناوی خوێندکار</th><th>کۆد</th><th>نمرە (لەسەر '+num(G.scale)+')</th><th>نمرەی گۆڕدراو (لەسەر '+num(P.mid)+')</th></tr></thead><tbody>'+
+  (list.map(mRow).join('')||'<tr><td colspan="5" class="empty">هیچ خوێندکارێک نییە'+(c.type==='practical'&&!groups.length?' — هیچ گروپێک بۆ ئەم وانەیە دیاری نەکراوە':'')+'</td></tr>')+'</tbody></table></div>';
+}
+function setMdScale(ns){
+  const G=UI.md;
+  if(!(ns>0)){toast('ماوەی نمرەدانان دەبێت ژمارەیەکی گەورەتر لە سفر بێت',true);return render()}
+  if(G.dirty){const f=ns/G.scale;Object.keys(G.vals).forEach(id=>{const raw=String(G.vals[id]).trim().replace(',','.'),v=parseFloat(raw);if(raw!==''&&isFinite(v))G.vals[id]=num(r2(v*f))})}
+  else G.key=null;
+  G.scale=ns;try{localStorage.setItem('nurs_mscale',String(ns))}catch(e){}
+  render();
+}
+CHG.md=el=>{
+  const G=UI.md;
+  if(el.id==='md-scale')return setMdScale(parseFloat(el.value));
+  if(G.dirty&&!confirm('گۆڕانکارییەکانت پاشەکەوت نەکراون. بەردەوام دەبیت؟'))return render();
+  const nc=$('#md-course').value;
+  if(nc!==G.courseId){G.courseId=nc;G.group=''}else if($('#md-group'))G.group=$('#md-group').value;
+  G.key=null;render();
+};
+ACTS.mdScale=a=>setMdScale(parseFloat(a.dataset.s));
+INP.md=el=>{const G=UI.md;G.vals[el.dataset.sid]=el.value;G.dirty=true;const m=$('#mv-'+el.dataset.sid);if(m)m.innerHTML=mvText(el.value)};
+ACTS.goCfg=(a,e)=>{if(e)e.preventDefault();UI.cfgOpen=true;UI.tab='final';render()};
+ACTS.saveMd=()=>{
+  const G=UI.md,c=getCourse(G.courseId);if(!c)return;
+  if(!G.list.length){toast('هیچ خوێندکارێک نییە بۆ پاشەکەوتکردن',true);return}
+  DB.grades=DB.grades||[];
+  const ops=[];let bad=0;
+  G.list.forEach(s=>{
+    const raw=String(G.vals[s.id]==null?'':G.vals[s.id]).trim().replace(',','.');
+    const g0={courseId:c.id,sid:s.id,type:'midterm',date:'midterm'};
+    const i=DB.grades.findIndex(x=>gk(x)===gk(g0));
+    if(raw===''){if(i>=0&&DB.grades[i].score!=null)ops.push({i,g0,score:null});return}
+    const v=Number(raw);
+    if(!isFinite(v)||v<0||v>G.scale+1e-9){bad++;return}
+    ops.push({i,g0,score:Math.round(v/G.scale*100*1e4)/1e4});
+  });
+  if(bad){toast(bad+' نمرە دروست نییە — دەبێت ژمارە بێت و لە ٠ تا '+num(G.scale)+' بێت',true);return}
+  const now=Date.now();let n=0;
+  ops.forEach(o=>{
+    if(o.score!=null)n++;
+    if(o.i>=0){const g=DB.grades[o.i];g.score=o.score;g.savedBy=SESSION.name;g.savedAt=now}
+    else DB.grades.push(Object.assign({id:uid(),score:o.score,savedBy:SESSION.name,savedAt:now},o.g0));
+  });
+  save();G.dirty=false;G.key=null;toast('نمرەی میدتێرم پاشەکەوت کرا ✓ ('+n+' نمرە)');render();
+};
+
+/* ---------- نمرەی کۆتایی ---------- */
+function calcRow(c,s,C,ctx){
+  const prof=profOf(c),P=C.p[prof],k=c.id+'|'+s.id,parts=[];
+  if(P.mid>0){const p=ctx.mx[k];parts.push({k:'mid',label:'میدتێرم',w:P.mid,pct:p==null?null:p,val:p==null?null:midConv(p,P,C)})}
+  GT.forEach(t=>{
+    const a=P.acts[t[0]];if(!(a.w>0))return;
+    const arr=(ctx.gx[k]||{})[t[0]],m=arr&&arr.length?meanOf(arr):null;
+    parts.push({k:t[0],label:t[1],w:a.w,raw:a.raw,mean:m,n:arr?arr.length:0,val:m==null?null:r2(Math.min(a.w,m/a.raw*a.w))});
+  });
+  const ab=(ctx.ax[k]||[]).length;
+  if(P.att>0)parts.push({k:'att',label:'غیابات',w:P.att,a:ab,val:attVal(ab,P,C),cut:attCutOf(ab,C)});
+  const miss=parts.filter(p=>p.val==null).map(p=>p.label),max=profSum(P);
+  const total=r2(Math.min(max,rndTo(r2(parts.reduce((t,p)=>t+(p.val||0),0)),C.rndTot)));
+  return {s,c,prof,parts,miss,total,max,a:ab,st:status(ab)};
+}
+function finalRows(f){
+  const C=GCfg(),ctx={ax:absIndex(),gx:gradeStats(),mx:midIndex()},q=(f.q||'').trim().toLowerCase(),out=[];
+  myCourses().forEach(c=>{
+    if(f.stage&&String(c.stage)!==String(f.stage))return;
+    if(f.course&&c.id!==f.course)return;
+    const pc=pairOf(c);
+    courseStudents(c,null).forEach(s=>{
+      if(q&&!(s.name.toLowerCase().includes(q)||String(s.code).toLowerCase().includes(q)))return;
+      const r=calcRow(c,s,C,ctx);
+      if(pc&&(pc.type!=='practical'||(pc.groupTeachers||{})[s.group])){
+        const o=calcRow(pc,s,C,ctx);
+        r.comb=r2(Math.min(C.total,r.total+o.total));r.combMax=r2(r.max+o.max);r.combMiss=o.miss.length>0;
+      }
+      out.push(r);
+    });
+  });
+  return out;
+}
+function partNote(p){
+  if(p.k==='mid')return num(r2(p.pct))+'%';
+  if(p.k==='att')return p.a+' غیاب';
+  return num(r2(p.mean))+' / '+num(p.raw)+(p.mean>p.raw?' <span class="w">⚠️</span>':'');
+}
+function partCell(p){
+  if(!p)return '<td class="mcell"><span class="mut">·</span></td>';
+  if(p.val==null)return '<td class="mcell"><span class="mut">—</span><small>لە '+num(p.w)+'</small></td>';
+  return '<td class="mcell"><b>'+num(p.val)+'</b><small>'+partNote(p)+'</small><small>لە '+num(p.w)+'</small></td>';
+}
+function finalStatus(r){
+  let h='';
+  if(r.st==='fail')h+='<span class="badge fail">کەوتوو (غیاب)</span> ';
+  else if(r.st==='warn')h+='<span class="badge warn">ئاگادارکراوەتەوە</span> ';
+  if(r.miss.length)h+='<span class="badge warn" title="نمرەی نەدراو: '+esc(r.miss.join('، '))+'">ناتەواو</span>';
+  return h||'<span class="badge ok">تەواو</span>';
+}
+const FKEYS=[['mid','میدتێرم']].concat(GT.map(t=>[t[0],t[1]]),[['att','غیابات']]);
+function finalOut(rows){
+  const C=GCfg(),keys=FKEYS.filter(k=>rows.some(r=>r.parts.some(p=>p.k===k[0]))),hasComb=rows.some(r=>r.comb!=null);
+  const avg=rows.length?r2(rows.reduce((t,r)=>t+(r.comb!=null?r.comb:r.total),0)/rows.length):0,inc=rows.filter(r=>r.miss.length||r.combMiss).length;
+  return '<div class="chips"><span class="chip">ڕیزەکان: <b>'+rows.length+'</b></span><span class="chip ok">ناوەندی کۆی گشتی: <b>'+num(avg)+' / '+num(C.total)+'</b></span><span class="chip warn">ناتەواو: <b>'+inc+'</b></span></div>'+
+  '<div class="card tbl"><table><thead><tr><th>#</th><th>ناوی خوێندکار</th><th>کۆد</th><th>قۆناغ</th><th>گروپ</th><th>وانە</th>'+keys.map(k=>'<th>'+k[1]+'</th>').join('')+'<th>کۆی ئەم وانەیە</th>'+(hasComb?'<th>کۆی تیۆری + پراکتیکی<br><small>لە '+num(C.total)+'</small></th>':'')+'<th>دۆخ</th></tr></thead><tbody>'+
+  (rows.map((r,i)=>'<tr class="clk" data-act="fdetail" data-sid="'+r.s.id+'" data-cid="'+r.c.id+'"><td class="n">'+(i+1)+'</td><td class="nm">'+esc(r.s.name)+'</td><td>'+esc(r.s.code)+'</td><td>'+r.s.stage+'</td><td>'+esc(r.s.group||'—')+'</td><td>'+esc(r.c.name)+'<small>'+typeName(r.c.type)+'</small></td>'+keys.map(k=>partCell(r.parts.find(p=>p.k===k[0]))).join('')+
+    '<td class="mcell"><span class="tot">'+num(r.total)+'</span><small>لە '+num(r.max)+'</small></td>'+(hasComb?'<td class="mcell">'+(r.comb!=null?'<span class="tot">'+num(r.comb)+'</span><small>لە '+num(r.combMax)+'</small>':'<span class="mut">—</span>')+'</td>':'')+'<td>'+finalStatus(r)+'</td></tr>').join('')||'<tr><td colspan="'+(8+keys.length+(hasComb?1:0))+'" class="empty">هیچ ئەنجامێک نییە</td></tr>')+'</tbody></table></div>';
+}
+const gcNum=(form,n)=>{const v=parseFloat(String(form.elements[n].value).replace(',','.'));return isNaN(v)?0:v};
+function gcSumHtml(form){
+  const T=gcNum(form,'total'),S={};
+  PROF.forEach(([k])=>{let s=gcNum(form,k+'_mid')+gcNum(form,k+'_att');GT.forEach(t=>{s+=gcNum(form,k+'_w_'+t[0])});S[k]=r2(s)});
+  const ds=r2(S.theory+S.practical),c=(ok,t)=>'<span class="chip '+(ok?'sumok':'sumbad')+'">'+t+'</span> ';
+  return c(Math.abs(S.solo-T)<1e-9,'تەنها تیۆری: '+num(S.solo)+' / '+num(T)+(Math.abs(S.solo-T)<1e-9?' ✓':''))+c(Math.abs(ds-T)<1e-9,'تیۆری + پراکتیکی: '+num(S.theory)+' + '+num(S.practical)+' = '+num(ds)+' / '+num(T)+(Math.abs(ds-T)<1e-9?' ✓':''));
+}
+function cfgCard(C,bad){
+  const RND=[[0,'بێ خپکردنەوە'],[0.25,'نزیکترین ٠.٢٥'],[0.5,'نزیکترین ٠.٥'],[1,'نزیکترین ١']];
+  const sel=(n,v)=>'<select name="'+n+'">'+RND.map(o=>'<option value="'+o[0]+'"'+(+v===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select>';
+  const inp=(n,v,l,extra)=>'<label>'+l+'<input name="'+n+'" type="number" step="any" min="0" dir="ltr" data-part="gcfg" value="'+v+'" required'+(extra||'')+'></label>';
+  const prof=(k,P)=>'<div class="card" style="background:#f8fafc;padding:12px"><b>'+profName(k)+'</b> <span class="mut">— کۆ: '+num(profSum(P))+'</span><div class="cfgg">'+inp(k+'_mid',P.mid,'میدتێرم')+inp(k+'_att',P.att,'غیابات')+'</div><div class="cfgg">'+
+    GT.map(t=>'<div class="gb"><b>'+t[1]+'</b>'+inp(k+'_w_'+t[0],P.acts[t[0]].w,'نمرە لە کۆتایی')+'<label>نمرەکان لەسەر چەندن<input name="'+k+'_r_'+t[0]+'" type="number" step="any" min="0.01" dir="ltr" data-part="gcfg" value="'+(P.acts[t[0]].rawSet?P.acts[t[0]].raw:'')+'" placeholder="وەک نمرەی بەش"></label></div>').join('')+'</div></div>';
+  return '<div class="card no-print"><details class="cfg"'+(UI.cfgOpen||bad?' open':'')+'><summary>⚙️ دابەشکردنی نمرەی کۆتایی (کۆی گشتی '+num(C.total)+')</summary>'+
+  '<form data-form="gcfg"><div class="cfgg">'+inp('total',C.total,'کۆی نمرەی کۆتایی',' min="1"')+'<label>خپکردنەوەی نمرەی میدتێرم'+sel('rndMid',C.rndMid)+'</label><label>خپکردنەوەی نمرەی کۆتایی'+sel('rndTot',C.rndTot)+'</label></div>'+
+  '<b>کەمکردنەوەی نمرەی غیابات (% لە نمرەی غیاب)</b><div class="cfgg"><label>١ غیاب<input name="cut1" type="number" step="any" min="0" max="100" dir="ltr" value="'+C.attCut[0]+'" required></label><label>٢ غیاب<input name="cut2" type="number" step="any" min="0" max="100" dir="ltr" value="'+C.attCut[1]+'" required></label><label>٣ غیاب یان زیاتر<input name="cut3" type="number" step="any" min="0" max="100" dir="ltr" value="'+C.attCut[2]+'" required></label></div>'+
+  PROF.map(([k])=>prof(k,C.p[k])).join('')+
+  '<div class="row"><span id="gc-sum"></span><button class="btn pri">💾 پاشەکەوتکردن</button><button type="button" class="btn" data-act="gcDef">گەڕاندنەوەی ڕێکخستنی بنەڕەتی</button></div>'+
+  '<div class="hint">«تەنها تیۆری» دەبێت کۆی ببێتە '+num(C.total)+'، و «تیۆری + پراکتیکی» پێکەوە دەبێت ببنە '+num(C.total)+'. «نمرەکان لەسەر چەندن» بەتاڵ بێت یانی هەمان نمرەی بەشەکەیە؛ ئەگەر کویزەکان لەسەر ١٠ن و بەشەکەی ٤یە، لێرە ١٠ بنووسە. بۆ لابردنی بەشێک نمرەکەی بکە ٠. وانەی تیۆری+پراکتیکی لە «وانەکان» بە دوو وانە دروست دەکرێت (هەمان ناو و قۆناغ) و لە وانەی تیۆری تیکی «پراکتیکیشی هەیە» دەکەیت.</div></form></details></div>';
+}
+function finalBody(){
+  const R=UI.fn,C=GCfg(),cs=myCourses().filter(c=>!R.stage||String(c.stage)===String(R.stage));
+  if(R.course&&!cs.some(c=>c.id===R.course))R.course='';
+  const opt=(v,t,s)=>'<option value="'+v+'"'+(s===v?' selected':'')+'>'+t+'</option>';
+  const errs=gcErrors(C),bad=errs.length>0;
+  const warns=[];
+  DB.courses.forEach(c=>{
+    if(c.dual&&!pairOf(c))warns.push('وانەی «'+c.name+'» (تیۆری) پراکتیکیشی هەیە بەڵام وانەی پراکتیکی بە هەمان ناو و قۆناغ نەدۆزرایەوە.');
+    if(c.type==='practical'&&!pairOf(c))warns.push('وانەی پراکتیکی «'+c.name+'» وانەیەکی تیۆری بە هەمان ناو و قۆناغ و تیکی «پراکتیکیشی هەیە»ی نییە، بۆیە تەنها لەسەر '+num(profSum(C.p.practical))+' هەژمار دەکرێت.');
+  });
+  const ps=k=>{const P=C.p[k];return 'میدتێرم '+num(P.mid)+GT.filter(t=>P.acts[t[0]].w>0).map(t=>' + '+t[1]+' '+num(P.acts[t[0]].w)).join('')+' + غیابات '+num(P.att)};
+  setTimeout(()=>{const f=$('form[data-form="gcfg"]'),el=$('#gc-sum');if(f&&el)el.innerHTML=gcSumHtml(f)},0);
+  return '<div class="print-only"><h2>'+esc(DB.settings.college)+' — '+esc(DB.settings.title)+'</h2><div>نمرەی کۆتایی ('+num(C.total)+') — '+today()+'</div></div>'+
+  (bad?'<div class="alert no-print">⚠️ دابەشکردنی نمرەکان تەواو نییە:<br>'+errs.join('<br>')+'<br>'+(isAdmin()?'لە خوارەوە ڕێکی بخە.':'داوا لە سەرۆکی بەش بکە ڕێکی بخات.')+'</div>':'')+
+  (isAdmin()&&warns.length?'<div class="alert no-print">'+warns.map(esc).join('<br>')+'</div>':'')+
+  (isAdmin()?cfgCard(C,bad):'<div class="card no-print"><div class="chips" style="margin:0"><span class="chip">تەنها تیۆری: <b>'+ps('solo')+'</b></span><span class="chip">تیۆری: <b>'+ps('theory')+'</b></span><span class="chip">پراکتیکی: <b>'+ps('practical')+'</b></span></div></div>')+
+  '<div class="card no-print"><div class="filters">'+
+  '<label>قۆناغ<select data-chg="fn" data-k="stage">'+stageOptions(R.stage,true)+'</select></label>'+
+  '<label>وانە<select data-chg="fn" data-k="course">'+opt('','هەموو وانەکان',R.course)+cs.map(c=>opt(c.id,esc(c.name)+' ('+typeName(c.type)+')',R.course)).join('')+'</select></label>'+
+  '<label>گەڕان<input data-part="fn" data-k="q" value="'+esc(R.q)+'" placeholder="ناو یان کۆد"></label></div>'+
+  '<div class="row"><button class="btn sec" data-act="fcsv">⬇️ دەرهێنان بۆ Excel (CSV)</button><button class="btn" data-act="print">🖨️ چاپکردن</button></div>'+
+  '<div class="hint">هەموو نمرەکان خۆکارانە لە بەشەکانی تر دێن و کۆ دەکرێنەوە: <b>میدتێرم</b> (لە «نمرەی میدتێرم») + <b>چالاکییەکان</b> (mean ـی هەر جۆرێک لە «نمرەدانان») + <b>غیابات</b> (١ غیاب = '+C.attCut[0]+'% کەم دەکاتەوە، ٢ غیاب = '+C.attCut[1]+'%، ٣ غیاب یان زیاتر = '+C.attCut[2]+'% لە نمرەی غیاب). ئەگەر نمرەیەک نەدرابێت وەک ٠ هەژمار دەکرێت و «ناتەواو» پیشان دەدرێت. بۆ وانەی تیۆری+پراکتیکی، ستوونی «کۆی تیۆری + پراکتیکی» هەردوو بەشەکە کۆ دەکاتەوە. کلیک لەسەر ڕیزێک بکە بۆ بینینی هەژمارەکە.</div></div>'+
+  '<div id="fn-out">'+finalOut(finalRows(R))+'</div>';
+}
+CHG.fn=el=>{UI.fn[el.dataset.k]=el.value;if(el.dataset.k==='stage')UI.fn.course='';render()};
+INP.fn=el=>{UI.fn[el.dataset.k]=el.value;$('#fn-out').innerHTML=finalOut(finalRows(UI.fn))};
+INP.gcfg=el=>{const s=$('#gc-sum');if(s)s.innerHTML=gcSumHtml(el.form)};
+FORMS.gcfg=f=>{
+  const g=n=>Number(String(f.elements[n].value).replace(',','.'));
+  const total=g('total'),p={},sums={};
+  let ok=total>0;
+  PROF.forEach(([k])=>{
+    const mid=g(k+'_mid'),att=g(k+'_att'),acts={};
+    if(!(mid>=0&&att>=0))ok=false;
+    let s=mid+att;
+    GT.forEach(t=>{
+      const w=g(k+'_w_'+t[0]),rs=String(f.elements[k+'_r_'+t[0]].value).trim(),raw=rs===''?null:Number(rs.replace(',','.'));
+      if(!(w>=0)||(raw!==null&&!(raw>0)))ok=false;
+      acts[t[0]]={w,raw};s+=w;
+    });
+    p[k]={mid,att,acts};sums[k]=r2(s);
+  });
+  if(!ok){toast('ژمارەکان دروست نین (نمرەکان نابێت سالب بن و «لەسەر چەندن» دەبێت گەورەتر لە ٠ بێت)',true);return}
+  if(Math.abs(sums.solo-total)>1e-9){toast('وانەی تەنها تیۆری: کۆ '+num(sums.solo)+'ـە و دەبێت '+num(total)+' بێت',true);return}
+  const ds=r2(sums.theory+sums.practical);
+  if(Math.abs(ds-total)>1e-9){toast('تیۆری + پراکتیکی: کۆ '+num(ds)+'ـە و دەبێت '+num(total)+' بێت',true);return}
+  const attCut=[g('cut1'),g('cut2'),g('cut3')];
+  if(!attCut.every(x=>x>=0&&x<=100)){toast('ڕێژەی کەمکردنەوەی غیاب دەبێت لە ٠ تا ١٠٠ بێت',true);return}
+  DB.settings.gcfg={total,attCut,rndMid:+f.elements.rndMid.value,rndTot:+f.elements.rndTot.value,p};
+  UI.cfgOpen=false;cfg();toast('دابەشکردنی نمرەکان پاشەکەوت کرا ✓');render();
+};
+ACTS.gcDef=()=>{if(!confirm('دابەشکردنی نمرەکان دەگەڕێتەوە بۆ ڕێکخستنی بنەڕەتی. دڵنیایت؟'))return;delete DB.settings.gcfg;UI.cfgOpen=true;cfg();render()};
+ACTS.fcsv=()=>{
+  const C=GCfg(),rows=finalRows(UI.fn),keys=FKEYS.filter(k=>rows.some(r=>r.parts.some(p=>p.k===k[0])));
+  const h=['#','ناوی خوێندکار','کۆد','قۆناغ','گروپ','وانە','جۆر'];
+  keys.forEach(k=>h.push(k[1]));h.push('کۆی ئەم وانەیە','لە','کۆی تیۆری + پراکتیکی','ژمارەی غیاب','دۆخ');
+  const out=[h].concat(rows.map((r,i)=>[i+1,r.s.name,r.s.code,r.s.stage,r.s.group||'',r.c.name,typeName(r.c.type)].concat(keys.map(k=>{const p=r.parts.find(x=>x.k===k[0]);return p&&p.val!=null?p.val:''}),[r.total,r.max,r.comb!=null?r.comb:'',r.a,(r.st==='fail'?'کەوتوو (غیاب)':r.st==='warn'?'ئاگادارکراوەتەوە':'ئاسایی')+(r.miss.length?' — ناتەواو':'')])));
+  download('final-grades-'+stamp()+'.csv',toCSV(out),'text/csv;charset=utf-8');
+};
+ACTS.fdetail=a=>{
+  const C=GCfg(),r=finalRows({}).find(x=>x.s.id===a.dataset.sid&&x.c.id===a.dataset.cid);if(!r)return;
+  const lines=r.parts.map(p=>{
+    let f;
+    if(p.val==null)f='<span class="mut">نمرەی نەدراوە — وەک ٠ هەژمار دەکرێت</span>';
+    else if(p.k==='mid')f=num(r2(p.pct))+'% × '+num(p.w)+' ÷ ١٠٠ = <b>'+num(p.val)+'</b>';
+    else if(p.k==='att')f=p.a+' غیاب ← کەمکردنەوەی '+num(p.cut)+'% : '+num(p.w)+' × (١٠٠% − '+num(p.cut)+'%) = <b>'+num(p.val)+'</b>';
+    else f='mean '+num(r2(p.mean))+' ('+p.n+' نمرە) ÷ '+num(p.raw)+' × '+num(p.w)+' = <b>'+num(p.val)+'</b>'+(p.mean>p.raw?' <span style="color:var(--warn)">⚠️ mean لە '+num(p.raw)+' زیاترە — بە زۆرترین نمرە سنووردار کرا</span>':'');
+    return '<p style="margin-bottom:2px"><b>'+p.label+'</b> <span class="mut">(لە '+num(p.w)+')</span></p><div class="fm">'+f+'</div>';
+  }).join('');
+  modal('<h3>'+esc(r.s.name)+'</h3><p class="mut">'+esc(r.c.name)+' ('+typeName(r.c.type)+') — '+profName(r.prof)+'</p>'+lines+'<hr style="border:0;border-top:1px solid var(--bd)"><p style="margin:6px 0 0"><b>کۆی ئەم وانەیە:</b> <span class="tot">'+num(r.total)+'</span> / '+num(r.max)+'</p>'+(r.comb!=null?'<p style="margin:4px 0 0"><b>کۆی تیۆری + پراکتیکی:</b> <span class="tot">'+num(r.comb)+'</span> / '+num(r.combMax)+'</p>':''));
+};
+
 /* ================= ئۆنلاین (Google Sheet) ================= */
 const KEY2='nursing_online_cache_v1',SYNC={st:'',t:''};
 let LOADED=!ONLINE,QUIET=false,PENDING=false,CHG_N=0,syncBusy=false,syncAgain=false,syncT=null;
@@ -868,7 +1155,7 @@ async function doSync(){
     else{
       if(isAdmin()&&payload&&payload.admin&&payload.admin.pw&&(payload.admin.pw!==SESSION.ph||payload.admin.username!==SESSION.u)){SESSION.u=String(payload.admin.username).toLowerCase();SESSION.ph=payload.admin.pw;storeSess()}
       QUIET=true;const st=mergeIn(res.db);QUIET=false;
-      const ae=document.activeElement,busy=(UI.att&&UI.att.dirty)||(UI.gr&&UI.gr.dirty)||$('#modal').innerHTML||(ae&&/INPUT|SELECT|TEXTAREA/.test(ae.tagName));
+      const ae=document.activeElement,busy=(UI.att&&UI.att.dirty)||(UI.gr&&UI.gr.dirty)||(UI.md&&UI.md.dirty)||$('#modal').innerHTML||(ae&&/INPUT|SELECT|TEXTAREA/.test(ae.tagName));
       if((st.added||st.updated||st.cfg)&&!busy)render();
     }
     if(CHG_N===n)PENDING=false;
@@ -884,7 +1171,7 @@ async function onlineLogin(f,u,p){
     if(!res.ok){toast(res.error==='auth'?'ناوی بەکارهێنەر یان پاسۆرد هەڵەیە':'هەڵەی سێرڤەر: '+res.error,true);return}
     DB=Object.assign(baseDB(),res.db);LOADED=true;
     SESSION={role:res.role,id:res.id,name:res.name,u,ph};storeSess();
-    UI.tab=isAdmin()?'home':'attend';UI.att=null;UI.gr=null;
+    UI.tab=isAdmin()?'home':'attend';UI.att=null;UI.gr=null;UI.md=null;
     QUIET=true;save();QUIET=false;setSync('ok');render();
   }catch(e){toast(netMsg(e),true)}
   finally{if(b.isConnected){b.disabled=false;b.textContent=old}}
