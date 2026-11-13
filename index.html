@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>سیستەمی غیابات — بەشی پەرستاری</title>
+<style>
+:root{--p:#0f766e;--p2:#115e59;--bg:#f1f5f9;--card:#fff;--tx:#0f172a;--mut:#64748b;--bd:#e2e8f0;--ok:#16a34a;--warn:#d97706;--fail:#dc2626}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic","Noto Sans Arabic",Arial,sans-serif;background:var(--bg);color:var(--tx);font-size:15px;line-height:1.6}
+.top{background:linear-gradient(135deg,var(--p2),var(--p));color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.t1{font-size:13px;opacity:.85}.t2{font-size:19px;font-weight:700}
+.who{display:flex;align-items:center;gap:10px}
+.tabs{display:flex;gap:4px;overflow-x:auto;background:#fff;border-bottom:1px solid var(--bd);padding:6px 10px;position:sticky;top:0;z-index:5}
+.tabs button{border:0;background:none;padding:9px 14px;border-radius:8px;cursor:pointer;font:inherit;white-space:nowrap;color:var(--mut)}
+.tabs button.on{background:var(--p);color:#fff}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}.narrow{max-width:860px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:14px}
+.card h2,.card h3{margin:0 0 10px;font-size:17px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}}
+label{display:block;font-size:13px;color:var(--mut);margin-bottom:10px}
+input,select,textarea{width:100%;font:inherit;padding:9px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:var(--tx);margin-top:4px}
+textarea{min-height:110px;direction:ltr;text-align:left}
+input:focus,select:focus,textarea:focus{outline:2px solid #5eead4;border-color:var(--p)}
+.btn{font:inherit;border:0;border-radius:8px;padding:9px 16px;cursor:pointer;background:#e2e8f0;color:var(--tx)}
+.btn.pri{background:var(--p);color:#fff}.btn.sec{background:#ccfbf1;color:var(--p2)}.btn.danger{background:#fee2e2;color:#b91c1c}
+.btn.ghost{background:rgba(255,255,255,.18);color:#fff}.card .btn.ghost{background:#e2e8f0;color:var(--tx)}
+.btn.sm{padding:4px 10px;font-size:13px}.btn.block{width:100%;margin-top:6px}
+.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}.row>.grow{flex:1;min-width:180px}.row label{margin-bottom:0}
+.filters{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:10px}.filters label{margin:0}
+.mut{color:var(--mut)}.hint{font-size:12.5px;color:var(--mut);margin-top:10px}
+.empty{text-align:center;color:var(--mut);padding:22px}
+.tbl{padding:0;overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{background:#f8fafc;text-align:right;padding:10px;font-size:13px;color:var(--mut);border-bottom:1px solid var(--bd);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--bd)}
+td small{display:block;color:var(--mut);font-size:12px}
+tr.abs{background:#fef2f2}.clk{cursor:pointer}.clk:hover{background:#f0fdfa}
+td.n{width:44px;color:var(--mut)}td.nm{font-weight:600}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12.5px;white-space:nowrap}
+.badge.ok{background:#dcfce7;color:#166534}.badge.warn{background:#fef3c7;color:#92400e}.badge.fail{background:#fee2e2;color:#991b1b}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px}
+.chip{background:#f1f5f9;border-radius:999px;padding:4px 14px;font-size:13.5px}
+.chip.ok{background:#dcfce7}.chip.warn{background:#fef3c7}.chip.fail{background:#fee2e2}
+.tg{font:inherit;min-width:86px;height:38px;border-radius:8px;border:2px solid var(--ok);background:#fff;color:var(--ok);cursor:pointer;font-weight:600}
+.tg.a{background:var(--fail);border-color:var(--fail);color:#fff}
+.datebar{background:linear-gradient(135deg,#0f766e,#0e7490);color:#fff;border-radius:12px;padding:14px 18px;margin-bottom:14px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.datebar .dl{font-weight:700;font-size:16px}
+.datebar input{width:auto;font-size:18px;font-weight:700;margin:0}
+.datebar .dn{font-size:20px;font-weight:700}
+.datebar .tag{background:rgba(255,255,255,.2);border-radius:999px;padding:2px 12px;font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.stat{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:14px;text-align:center}
+.stat b{display:block;font-size:26px;color:var(--p2)}.stat.warn b{color:var(--warn)}.stat.fail b{color:var(--fail)}
+.alert{background:#fef3c7;border:1px solid #fcd34d;color:#78350f;border-radius:10px;padding:10px 14px;margin-bottom:14px}
+.scard{background:#fff;border:1px solid var(--bd);border-right:5px solid var(--ok);border-radius:12px;padding:14px;margin-bottom:12px}
+.scard.warn{border-right-color:var(--warn)}.scard.fail{border-right-color:var(--fail)}
+.scard .sh{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.scard .sh .badge{margin-right:auto}
+.big{font-size:30px;font-weight:800}
+.bar{height:8px;background:#e2e8f0;border-radius:6px;overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;background:var(--ok)}
+.scard.warn .bar i{background:var(--warn)}.scard.fail .bar i{background:var(--fail)}
+.msg{font-weight:600;margin:6px 0 0}.scard.warn .msg{color:#92400e}.scard.fail .msg{color:#991b1b}
+.dts span{display:inline-block;background:#f1f5f9;border-radius:6px;padding:1px 8px;margin:2px;font-size:12.5px;direction:ltr}
+.ov{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:14px;z-index:50}
+.mod{background:#fff;border-radius:14px;padding:18px;width:100%;max-width:460px;max-height:90vh;overflow:auto}
+.mfoot{margin-top:10px;text-align:left}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:#0f172a;color:#fff;padding:10px 20px;border-radius:10px;opacity:0;transition:.25s;z-index:99;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%)}#toast.bad{background:#b91c1c}
+.gin{width:96px;text-align:center;font-weight:700;margin:0}
+.mcell b{font-size:16px}.mcell small{display:block;color:var(--mut);font-size:11.5px}
+.fm{direction:ltr;display:inline-block;background:#f1f5f9;border-radius:8px;padding:4px 10px;margin:4px 0;font-weight:600}
+.gbox{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:10px}
+.gb{background:#f8fafc;border:1px solid var(--bd);border-radius:10px;padding:8px 10px;text-align:center}
+.gb b{display:block;font-size:22px;color:var(--p2)}.gb small{display:block;color:var(--mut);font-size:11.5px}
+.syn{font-size:12.5px;background:rgba(255,255,255,.18);border-radius:999px;padding:2px 10px}
+.print-only{display:none}
+@media print{.no-print,.top,.tabs{display:none!important}.print-only{display:block;margin-bottom:10px}body{background:#fff}.card{border:0;padding:0}.wrap{max-width:none;padding:0}}
+</style>
+</head>
+<body>
+<div id="app"></div><div id="modal"></div><div id="toast"></div>
+<input type="file" id="impf" accept=".json,application/json" hidden>
+<script id="snapdata" type="application/json"></script>
+<script>
+'use strict';
+/* ===== ئۆنلاین: ناونیشانی Web App ـی Google Apps Script لێرە دابنێ =====
+   ئەگەر بەتاڵ بێت، سیستەمەکە وەک پێشوو بە شێوەی ئۆفلاین (لەسەر ئامێرەکە) کار دەکات. */
+const API_URL='https://script.google.com/macros/s/AKfycbxY1bjYMnIHGx6Bwi-YQtdA7GBKmlOBJhyq43rVZOTd0DJCwlWpC7CzWBIBYwA6Ej-q/exec';
+const ONLINE=/^https?:\/\//.test(API_URL);
+/* ================= SHA-256 (بۆ پاسۆرد) ================= */
+function sha256(ascii){
+  function rr(v,a){return (v>>>a)|(v<<(32-a));}
+  var mp=Math.pow,mw=mp(2,32),i,j,result='',words=[],abl=ascii.length*8;
+  var hash=sha256.h=sha256.h||[],k=sha256.k=sha256.k||[],pc=k.length,isc={};
+  for(var c=2;pc<64;c++){
+    if(!isc[c]){
+      for(i=0;i<313;i+=c)isc[i]=c;
+      hash[pc]=(mp(c,.5)*mw)|0;
+      k[pc++]=(mp(c,1/3)*mw)|0;
+    }
+  }
+  ascii+='\x80';
+  while(ascii.length%64-56)ascii+='\x00';
+  for(i=0;i<ascii.length;i++){
+    j=ascii.charCodeAt(i);
+    if(j>>8)return '';
+    words[i>>2]|=j<<((3-i)%4)*8;
+  }
+  words[words.length]=((abl/mw)|0);
+  words[words.length]=(abl);
+  for(j=0;j<words.length;){
+    var w=words.slice(j,j+=16),old=hash;
+    hash=hash.slice(0,8);
+    for(i=0;i<64;i++){
+      var w15=w[i-15],w2=w[i-2],a=hash[0],e=hash[4];
+      var t1=hash[7]+(rr(e,6)^rr(e,11)^rr(e,25))+((e&hash[5])^((~e)&hash[6]))+k[i]+
+        (w[i]=(i<16)?w[i]:(w[i-16]+(rr(w15,7)^rr(w15,18)^(w15>>>3))+w[i-7]+(rr(w2,17)^rr(w2,19)^(w2>>>10)))|0);
+      var t2=(rr(a,2)^rr(a,13)^rr(a,22))+((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));
+      hash=[(t1+t2)|0].concat(hash);
+      hash[4]=(hash[4]+t1)|0;
+    }
+    for(i=0;i<8;i++)hash[i]=(hash[i]+old[i])|0;
+  }
+  for(i=0;i<8;i++)for(j=3;j+1;j--){var b=(hash[i]>>(j*8))&255;result+=((b<16)?0:'')+b.toString(16);}
+  return result;
+}
+const utf8=s=>unescape(encodeURIComponent(s));
+const H=s=>sha256(utf8('nurs-att|'+s));
+
+/* ================= یاریدەدەرەکان ================= */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);
+const pad=n=>String(n).padStart(2,'0');
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+const DAYS=['یەکشەممە','دووشەممە','سێشەممە','چوارشەممە','پێنجشەممە','هەینی','شەممە'];
+const dayName=d=>d?DAYS[new Date(d+'T00:00:00').getDay()]:'';
+const STAGE=['','یەکەم','دووەم','سێیەم','چوارەم','پێنجەم','شەشەم'];
+const stageName=n=>'قۆناغی '+(STAGE[n]||n);
+const STL={ok:'ئاسایی',warn:'ئاگادارکراوەتەوە',fail:'کەوتوو'};
+const typeName=t=>t==='theory'?'تیۆری':'پراکتیکی';
+const coll=new Intl.Collator('ckb');
+const byName=(a,b)=>coll.compare(a.name,b.name);
+const rk=r=>r.courseId+'|'+(r.group||'')+'|'+r.date;
+const randPw=()=>{const s='abcdefghjkmnpqrstuvwxyz23456789';let o='';for(let i=0;i<7;i++)o+=s[Math.floor(Math.random()*s.length)];return o};
+function toast(m,bad){const t=$('#toast');t.textContent=m;t.className='show'+(bad?' bad':'');clearTimeout(toast.t);toast.t=setTimeout(()=>{t.className=''},2800)}
+function download(name,text,mime){const b=new Blob([text],{type:mime||'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},600)}
+const toCSV=rows=>'\ufeff'+rows.map(r=>r.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+function modal(html){$('#modal').innerHTML='<div class="ov" data-act="closeM"><div class="mod">'+html+'<div class="mfoot"><button class="btn" data-act="closeM">داخستن</button></div></div></div>'}
+function formModal(title,fields,cb){
+  UI.mcb=cb;
+  modal('<h3>'+esc(title)+'</h3><form data-form="mform">'+fields.map(f=>'<label>'+esc(f.label)+(f.type==='select'
+    ?'<select name="'+f.k+'">'+f.options.map(o=>'<option value="'+esc(o[0])+'"'+(String(o[0])===String(f.value)?' selected':'')+'>'+esc(o[1])+'</option>').join('')+'</select>'
+    :'<input name="'+f.k+'" type="'+(f.type||'text')+'" value="'+esc(f.value)+'"'+(f.req?' required':'')+'>')+'</label>').join('')+'<button class="btn pri block">پاشەکەوتکردن</button></form>');
+}
+
+/* ================= داتا ================= */
+const KEY='nursing_attendance_v1';
+const baseDB=()=>({v:1,cfgStamp:0,epoch:0,settings:{college:'کۆلێجی تەکنیکی کەلار',title:'بەشی پەرستاری',pct:3,warn:3,fail:4,stages:4},admin:null,teachers:[],students:[],courses:[],records:[],grades:[]});
+function freshDB(){const d=baseDB();d.admin={username:'admin',pw:H('admin123')};return d}
+function loadLS(){try{const t=localStorage.getItem(KEY);return t?JSON.parse(t):null}catch(e){return null}}
+let DB,SESSION=null,STUDENT_ONLY=false;
+const UI={gr:null,gsm:{stage:'',course:'',q:'',from:'',to:''},tab:'home',att:null,rep:{stage:'',course:'',status:'',q:'',from:'',to:'',sort:'course'},cf:null,sf:{stage:'',q:''},sess:{course:''},gs:null,gmsg:'',mcb:null};
+function save(){
+  if(STUDENT_ONLY)return;
+  if(ONLINE){
+    if(SESSION&&SESSION.role!=='guest'){
+      try{localStorage.setItem(KEY2,JSON.stringify(DB))}catch(e){}
+      if(!QUIET){CHG_N++;PENDING=true;pushSoon()}
+    }
+    return;
+  }
+  try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){toast('نەتوانرا لە وێبگەڕەکەدا پاشەکەوت بکرێت',true)}
+}
+function cfg(){DB.cfgStamp=Date.now();save()}
+const status=a=>a>=DB.settings.fail?'fail':a>=DB.settings.warn?'warn':'ok';
+const getCourse=id=>DB.courses.find(c=>c.id===id);
+const getTeacher=id=>DB.teachers.find(t=>t.id===id);
+const isAdmin=()=>SESSION&&SESSION.role==='admin';
+const isDefaultAdmin=()=>DB.admin&&DB.admin.username==='admin'&&DB.admin.pw===H('admin123');
+
+function mergeIn(inc){
+  const st={added:0,updated:0,cfg:false};
+  if(!DB.admin&&(inc.cfgStamp||0)>(DB.cfgStamp||0)){
+    ['settings','teachers','students','courses'].forEach(k=>{if(inc[k])DB[k]=inc[k]});
+    DB.cfgStamp=inc.cfgStamp;st.cfg=true;
+  }
+  const ie=inc.epoch||0;
+  if(ie>DB.epoch){DB.records=(inc.records||[]).slice();DB.epoch=ie;DB.grades=(inc.grades||[]).slice();st.added=DB.records.length}
+  else if(ie===DB.epoch){
+    const m=new Map(DB.records.map(r=>[rk(r),r]));
+    (inc.records||[]).forEach(r=>{const o=m.get(rk(r));if(!o){m.set(rk(r),r);st.added++}else if((r.savedAt||0)>(o.savedAt||0)){m.set(rk(r),r);st.updated++}});
+    DB.records=[...m.values()];
+    DB.grades=DB.grades||[];
+    const gm=new Map(DB.grades.map(g=>[gk(g),g]));
+    (inc.grades||[]).forEach(g=>{const o=gm.get(gk(g));if(!o){gm.set(gk(g),g);st.added++}else if((g.savedAt||0)>(o.savedAt||0)){gm.set(gk(g),g);st.updated++}});
+    DB.grades=[...gm.values()];
+  }
+  save();return st;
+}
+
+/* ================= حیسابات ================= */
+function absIndex(from,to){
+  const ix={};
+  DB.records.forEach(r=>{
+    if(from&&r.date<from)return;if(to&&r.date>to)return;
+    (r.absent||[]).forEach(sid=>{(ix[r.courseId+'|'+sid]=ix[r.courseId+'|'+sid]||[]).push({d:r.date,g:r.group})});
+  });
+  return ix;
+}
+function myCourses(){
+  let l=DB.courses;
+  if(!isAdmin())l=l.filter(c=>c.type==='theory'?c.teacherId===SESSION.id:Object.values(c.groupTeachers||{}).includes(SESSION.id));
+  return l.slice().sort((a,b)=>a.stage-b.stage||byName(a,b));
+}
+function myGroups(c){
+  const gt=c.groupTeachers||{};
+  return Object.keys(gt).filter(g=>gt[g]&&(isAdmin()||gt[g]===SESSION.id)).sort(coll.compare);
+}
+function courseStudents(c,g){
+  let l=DB.students.filter(s=>String(s.stage)===String(c.stage));
+  if(c.type==='practical'){const gs=g?[g]:myGroups(c);l=l.filter(s=>gs.includes(s.group))}
+  return l.sort(byName);
+}
+function teacherOf(c,g){
+  const id=c.type==='theory'?c.teacherId:(c.groupTeachers||{})[g];
+  const t=getTeacher(id);return t?t.name:'—';
+}
+function groupsOfStage(stage){return [...new Set(DB.students.filter(s=>String(s.stage)===String(stage)&&s.group).map(s=>s.group))].sort(coll.compare)}
+function computeRows(f){
+  const ix=absIndex(f.from,f.to),S=DB.settings,out=[],q=(f.q||'').trim().toLowerCase();
+  myCourses().forEach(c=>{
+    if(f.stage&&String(c.stage)!==String(f.stage))return;
+    if(f.course&&c.id!==f.course)return;
+    courseStudents(c,null).forEach(s=>{
+      if(q&&!(s.name.toLowerCase().includes(q)||String(s.code).toLowerCase().includes(q)))return;
+      const dates=(ix[c.id+'|'+s.id]||[]).map(x=>x.d).sort(),a=dates.length,st=status(a);
+      if(f.status&&f.status!==st)return;
+      out.push({s,c,a,pct:a*S.pct,st,dates});
+    });
+  });
+  if(f.sort==='abs')out.sort((x,y)=>y.a-x.a||byName(x.s,y.s));
+  else if(f.sort==='name')out.sort((x,y)=>byName(x.s,y.s)||byName(x.c,y.c));
+  return out;
+}
+
+/* ================= دیمەنەکان ================= */
+function header(){
+  const S=DB.settings;
+  let r='';
+  if(SESSION&&SESSION.role!=='guest')r='<span>'+esc(SESSION.name)+(isAdmin()?' (سەرۆکی بەش)':'')+'</span><button class="btn ghost" data-act="logout">چوونەدەرەوە</button>'+(ONLINE?syncHTML():'');
+  else if(SESSION&&!STUDENT_ONLY)r='<button class="btn ghost" data-act="toLogin">گەڕانەوە</button>';
+  return '<header class="top no-print"><div><div class="t1">'+esc(S.college)+'</div><div class="t2">سیستەمی غیابات — '+esc(S.title)+'</div></div><div class="who">'+r+'</div></header>';
+}
+function loginView(){
+  return header()+'<main class="wrap narrow"><div class="grid2">'+
+  '<section class="card"><h2>🔐 چوونەژوورەوە</h2><p class="mut" style="margin-top:0">بۆ سەرۆکی بەش و مامۆستایان</p>'+
+  '<form data-form="login"><label>ناوی بەکارهێنەر<input name="u" autocomplete="username" required dir="ltr"></label>'+
+  '<label>پاسۆرد<input name="p" type="password" autocomplete="current-password" required dir="ltr"></label>'+
+  '<button class="btn pri block">چوونەژوورەوە</button></form>'+
+  (isDefaultAdmin()?'<div class="hint">یەکەم جار: ناو <b dir="ltr">admin</b> — پاسۆرد <b dir="ltr">admin123</b> (دوای چوونەژوورەوە بیگۆڕە)</div>':'')+'</section>'+
+  '<section class="card"><h2>🎓 خوێندکار (میوان)</h2><p class="mut" style="margin-top:0">بینینی ڕێژەی غیابەکانت بە کۆدی خوێندکاری</p>'+
+  '<button class="btn sec block" data-act="guest">بینینی غیابەکانم</button></section></div>'+
+  (ONLINE?'':'<section class="card no-print"><h3>📥 هێنانی فایلی داتا</h3><p class="mut" style="margin-top:0">ئەگەر سەرۆکی بەش فایلی داتای (JSON) ـی بۆ ناردوویت، لێرە بیهێنە.</p>'+
+  '<button class="btn" data-act="importMerge">هێنانی فایل</button></section>')+'</main>';
+}
+function guestView(){
+  return header()+'<main class="wrap narrow"><section class="card"><h2>🎓 ڕێژەی غیابی خوێندکار</h2>'+
+  '<form data-form="lookup" class="row"><label class="grow">ژمارە / کۆدی خوێندکار<input name="code" required dir="ltr" autocomplete="off"></label><button class="btn pri">بینین</button></form>'+
+  (UI.gmsg?'<p class="msg" style="color:#b91c1c">'+esc(UI.gmsg)+'</p>':'')+
+  '<div class="hint">هەر غیابێک = '+DB.settings.pct+'% — لە '+DB.settings.warn+' غیاب ئاگادارکردنەوە، لە '+DB.settings.fail+' غیاب کەوتن.</div></section>'+
+  (UI.gs?studentReport(UI.gs):'')+'</main>';
+}
+function studentReport(s){
+  const ix=absIndex(),S=DB.settings,gx=gradeStats();
+  const cs=DB.courses.filter(c=>String(c.stage)===String(s.stage)&&(c.type==='theory'||(c.groupTeachers||{})[s.group])).sort(byName);
+  const cards=cs.map(c=>{
+    const arr=(ix[c.id+'|'+s.id]||[]).map(x=>x.d).sort(),a=arr.length,st=status(a);
+    let msg='';
+    if(st==='fail')msg='بەهۆی '+a+' غیاب ('+a*S.pct+'%) لەم وانەیە کەوتوویت.';
+    else if(st==='warn')msg='ئاگاداری! '+a+' غیابت هەیە — بە '+S.fail+' غیاب دەکەویت.';
+    return '<div class="scard '+st+'"><div class="sh"><b>'+esc(c.name)+'</b><small class="mut">'+typeName(c.type)+'</small><span class="badge '+st+'">'+STL[st]+'</span></div>'+
+    '<div class="big">'+a*S.pct+'%</div><div class="mut">'+a+' غیاب (هەر غیابێک = '+S.pct+'%)</div>'+
+    '<div class="bar"><i style="width:'+Math.min(100,a/S.fail*100)+'%"></i></div>'+(msg?'<p class="msg">'+msg+'</p>':'')+
+    (arr.length?'<div class="dts">بەرواری غیابەکان: '+arr.map(d=>'<span>'+d+'</span>').join('')+'</div>':'')+
+    '<div class="gbox">'+GT.map(t=>{const a=(gx[c.id+'|'+s.id]||{})[t[0]];return '<div class="gb"><span class="mut">'+t[1]+' (mean)</span><b>'+(a?num(meanOf(a)):'—')+'</b>'+(a?'<small>'+a.length+' نمرە: '+a.map(x=>num(x.v)).join('، ')+'</small>':'')+'</div>'}).join('')+'</div></div>';
+  }).join('');
+  return '<section class="card"><h3>'+esc(s.name)+'</h3><div class="mut">'+stageName(s.stage)+(s.group?' — گروپ '+esc(s.group):'')+'</div></section>'+(cards||'<div class="card empty">هێشتا هیچ وانەیەک بۆ ئەم قۆناغە دیاری نەکراوە.</div>');
+}
+const ADMIN_TABS=[['home','🏠 سەرەتا'],['attend','✍️ وەرگرتنی غیاب'],['report','📊 ڕاپۆرتەکان'],['grades','📝 نمرەدانان'],['gsum','🏅 کۆی نمرەکان'],['sessions','🗓️ تۆماری ڕۆژانە'],['teachers','👩‍🏫 مامۆستایان'],['students','🎓 خوێندکاران'],['courses','📚 وانەکان'],['settings','⚙️ ڕێکخستن و داتا']];
+const TEACH_TABS=[['attend','✍️ وەرگرتنی غیاب'],['report','📊 ڕاپۆرتی وانەکانم'],['grades','📝 نمرەدانان'],['gsum','🏅 کۆی نمرەکان'],['sessions','🗓️ تۆمارەکانم'],['data','💾 ناردنی غیابات']];
+function shell(tabs){
+  if(ONLINE)tabs=tabs.filter(t=>t[0]!=='data');
+  if(!tabs.some(t=>t[0]===UI.tab))UI.tab=tabs[0][0];
+  return '<nav class="tabs no-print">'+tabs.map(t=>'<button class="'+(t[0]===UI.tab?'on':'')+'" data-act="tab" data-t="'+t[0]+'">'+t[1]+'</button>').join('')+'</nav><main class="wrap">'+BODY[UI.tab]()+'</main>';
+}
+function render(){
+  let h;
+  if(!SESSION)h=loginView();
+  else if(SESSION.role==='guest')h=guestView();
+  else if(ONLINE&&!LOADED)h=header()+'<main class="wrap narrow"><div class="card empty">⏳ داتاکان بار دەکرێن...<br><br><button class="btn" data-act="resync">دووبارە هەوڵبدەرەوە</button></div></main>';
+  else h=header()+shell(isAdmin()?ADMIN_TABS:TEACH_TABS);
+  $('#app').innerHTML=h;
+  if(UI.tab==='attend'&&$('#s-abs'))attSummary();
+}
+
+/* ---------- سەرەتا ---------- */
+function homeBody(){
+  const rows=computeRows({}),w=rows.filter(r=>r.st==='warn'),f=rows.filter(r=>r.st==='fail');
+  const lst=(a,t)=>a.length?'<div class="card tbl"><table><thead><tr><th colspan="4">'+t+' ('+a.length+')</th></tr></thead><tbody>'+a.slice(0,8).map(r=>'<tr class="clk" data-act="detail" data-sid="'+r.s.id+'" data-cid="'+r.c.id+'"><td>'+esc(r.s.name)+'</td><td>'+esc(r.c.name)+'</td><td>'+r.a+' غیاب</td><td>'+r.pct+'%</td></tr>').join('')+'</tbody></table></div>':'';
+  return (isDefaultAdmin()?'<div class="alert">⚠️ پاسۆردی سەرۆکی بەش هێشتا ئەوەی سەرەتاییە (admin123). لە «ڕێکخستن و داتا» بیگۆڕە.</div>':'')+
+  '<div class="stats"><div class="stat"><b>'+DB.students.length+'</b>خوێندکار</div><div class="stat"><b>'+DB.teachers.length+'</b>مامۆستا</div><div class="stat"><b>'+DB.courses.length+'</b>وانە</div><div class="stat"><b>'+DB.records.length+'</b>جاری غیاب تۆمارکراو</div><div class="stat warn"><b>'+w.length+'</b>ئاگادارکراوە</div><div class="stat fail"><b>'+f.length+'</b>کەوتوو</div></div>'+
+  '<div class="row no-print" style="margin-bottom:14px"><button class="btn pri" data-act="goRep" data-st="">هەموو ڕاپۆرتەکان</button><button class="btn danger" data-act="goRep" data-st="fail">تەنها کەوتووەکان</button><button class="btn sec" data-act="goRep" data-st="warn">تەنها ئاگادارکراوەکان</button></div>'+
+  lst(f,'کەوتووەکان')+lst(w,'ئاگادارکراوەکان')+
+  (!DB.teachers.length||!DB.courses.length?'<div class="card"><h3>دەستپێکردن</h3><ol><li>لە «خوێندکاران» ناوی خوێندکارەکان زیاد بکە (دەتوانیت لە Excel کۆپی بکەیت).</li><li>لە «مامۆستایان» یوزەر و پاسۆرد دروست بکە.</li><li>لە «وانەکان» وانە دروست بکە و مامۆستا (یان بۆ پراکتیکی: مامۆستا بۆ هەر گروپێک) دیاری بکە.</li></ol></div>':'');
+}
+
+/* ---------- وەرگرتنی غیاب ---------- */
+function attRow(s,i){
+  const A=UI.att,ab=A.absent.has(s.id),tot=(A.prev[s.id]||0)+(ab?1:0),st=status(tot);
+  return '<tr class="'+(ab?'abs':'')+'" data-sid="'+s.id+'"><td class="n">'+(i+1)+'</td><td class="nm">'+esc(s.name)+'</td><td class="mut">'+esc(s.code)+'</td><td><span class="badge '+st+'">'+tot+' غیاب · '+tot*DB.settings.pct+'%</span></td><td><button type="button" class="tg '+(ab?'a':'p')+'" data-act="tog">'+(ab?'غایب':'ئامادە')+'</button></td></tr>';
+}
+function attSummary(){
+  const A=UI.att;if(!A||!A.list)return;
+  const ab=A.list.filter(s=>A.absent.has(s.id)).length;
+  $('#s-abs').textContent=ab;$('#s-pre').textContent=A.list.length-ab;
+}
+function attendBody(){
+  const courses=myCourses();
+  if(!courses.length)return '<div class="card empty">'+(isAdmin()?'هیچ وانەیەک تۆمار نەکراوە. سەرەتا لە بەشی «وانەکان» وانە زیاد بکە.':'هیچ وانەیەکت بۆ دیاری نەکراوە. داوا لە سەرۆکی بەش بکە وانەکانت بۆ دیاری بکات.')+'</div>';
+  const A=UI.att=UI.att||{courseId:'',group:'',date:today(),absent:new Set(),loaded:false,key:null,dirty:false};
+  if(!courses.some(c=>c.id===A.courseId)){A.courseId=courses[0].id;A.group=''}
+  const c=getCourse(A.courseId);let groups=[];
+  if(c.type==='practical'){groups=myGroups(c);if(!groups.includes(A.group))A.group=groups[0]||''}else A.group='';
+  const key=A.courseId+'|'+A.group+'|'+A.date;
+  if(A.key!==key){const r=DB.records.find(r=>rk(r)===key);A.absent=new Set(r?r.absent:[]);A.loaded=!!r;A.key=key;A.dirty=false}
+  const list=c.type==='practical'&&!A.group?[]:courseStudents(c,A.group||null);
+  const prev={};
+  DB.records.forEach(r=>{if(r.courseId===c.id&&rk(r)!==key)(r.absent||[]).forEach(id=>{prev[id]=(prev[id]||0)+1})});
+  A.list=list;A.prev=prev;
+  return '<div class="datebar"><span class="dl">📅 بەرواری ڕۆژی غیاب</span><input type="date" id="att-date" data-chg="att" value="'+A.date+'"><span class="dn">'+dayName(A.date)+'</span>'+(A.loaded?'<span class="tag">پێشتر تۆمارکراوە — دەتوانیت دەستکاری بکەیت</span>':'')+'</div>'+
+  '<div class="card"><div class="row"><label class="grow">وانە<select id="att-course" data-chg="att">'+courses.map(x=>'<option value="'+x.id+'"'+(x.id===c.id?' selected':'')+'>'+esc(x.name)+' — '+typeName(x.type)+' — '+stageName(x.stage)+'</option>').join('')+'</select></label>'+
+  (c.type==='practical'?'<label>گروپ<select id="att-group" data-chg="att">'+groups.map(g=>'<option'+(g===A.group?' selected':'')+' value="'+esc(g)+'">'+esc(g)+'</option>').join('')+'</select></label>':'')+'</div>'+
+  '<div class="chips"><span class="chip">کۆی خوێندکار: <b>'+list.length+'</b></span><span class="chip ok">ئامادە: <b id="s-pre">0</b></span><span class="chip fail">غایب: <b id="s-abs">0</b></span><span class="chip">'+(c.type==='theory'?'تیۆری — هەموو خوێندکارانی '+stageName(c.stage):'پراکتیکی — گروپ '+esc(A.group))+'</span></div>'+
+  '<div class="row"><button class="btn sec" data-act="allPresent">هەمووی ئامادە</button><button class="btn pri" data-act="saveAtt">💾 پاشەکەوتکردنی غیاب</button></div>'+
+  '<div class="hint">لەسەر ناوی خوێندکار یان دوگمەکە کلیک بکە بۆ گۆڕینی «ئامادە / غایب». پاشان پاشەکەوت بکە.</div></div>'+
+  '<div class="card tbl"><table><thead><tr><th>#</th><th>ناوی خوێندکار</th><th>کۆد</th><th>کۆی غیاب (لەگەڵ ئەم ڕۆژە)</th><th>دۆخ</th></tr></thead><tbody id="att-body">'+
+  (list.map(attRow).join('')||'<tr><td colspan="5" class="empty">هیچ خوێندکارێک نییە'+(c.type==='practical'&&!groups.length?' — هیچ گروپێک بۆ ئەم وانەیە دیاری نەکراوە':'')+'</td></tr>')+'</tbody></table></div>';
+}
+
+/* ---------- ڕاپۆرت ---------- */
+function stageOptions(sel,all){
+  let o=all?'<option value="">هەموو قۆناغەکان</option>':'';
+  for(let i=1;i<=DB.settings.stages;i++)o+='<option value="'+i+'"'+(String(sel)===String(i)?' selected':'')+'>'+stageName(i)+'</option>';
+  return o;
+}
+function repOut(rows){
+  const w=rows.filter(r=>r.st==='warn').length,f=rows.filter(r=>r.st==='fail').length;
+  return '<div class="chips"><span class="chip">ڕیزەکان: <b>'+rows.length+'</b></span><span class="chip warn">ئاگادارکراوە: <b>'+w+'</b></span><span class="chip fail">کەوتوو: <b>'+f+'</b></span></div>'+
+  '<div class="card tbl"><table><thead><tr><th>#</th><th>ناوی خوێندکار</th><th>کۆد</th><th>قۆناغ</th><th>گروپ</th><th>وانە</th><th>غیاب</th><th>ڕێژە</th><th>دۆخ</th></tr></thead><tbody>'+
+  (rows.map((r,i)=>'<tr class="clk" data-act="detail" data-sid="'+r.s.id+'" data-cid="'+r.c.id+'"><td class="n">'+(i+1)+'</td><td class="nm">'+esc(r.s.name)+'</td><td>'+esc(r.s.code)+'</td><td>'+r.s.stage+'</td><td>'+esc(r.s.group||'—')+'</td><td>'+esc(r.c.name)+'<small>'+typeName(r.c.type)+'</small></td><td><b>'+r.a+'</b></td><td>'+r.pct+'%</td><td><span class="badge '+r.st+'">'+STL[r.st]+'</span></td></tr>').join('')||'<tr><td colspan="9" class="empty">هیچ ئەنجامێک نییە</td></tr>')+'</tbody></table></div>';
+}
+function reportBody(){
+  const R=UI.rep,cs=myCourses().filter(c=>!R.stage||String(c.stage)===String(R.stage));
+  if(R.course&&!cs.some(c=>c.id===R.course))R.course='';
+  const opt=(v,t,s)=>'<option value="'+v+'"'+(s===v?' selected':'')+'>'+t+'</option>';
+  return '<div class="print-only"><h2>'+esc(DB.settings.college)+' — '+esc(DB.settings.title)+'</h2><div>ڕاپۆرتی غیابات — '+today()+'</div></div>'+
+  '<div class="card no-print"><div class="filters">'+
+  '<label>قۆناغ<select data-chg="rep" data-k="stage">'+stageOptions(R.stage,true)+'</select></label>'+
+  '<label>وانە<select data-chg="rep" data-k="course">'+opt('','هەموو وانەکان',R.course)+cs.map(c=>opt(c.id,esc(c.name)+' ('+typeName(c.type)+')',R.course)).join('')+'</select></label>'+
+  '<label>دۆخ<select data-chg="rep" data-k="status">'+opt('','هەموو',R.status)+opt('warn','ئاگادارکراوە',R.status)+opt('fail','کەوتوو',R.status)+opt('ok','ئاسایی',R.status)+'</select></label>'+
+  '<label>لە بەرواری<input type="date" data-chg="rep" data-k="from" value="'+R.from+'"></label>'+
+  '<label>تا بەرواری<input type="date" data-chg="rep" data-k="to" value="'+R.to+'"></label>'+
+  '<label>گەڕان<input data-part="rep" data-k="q" value="'+esc(R.q)+'" placeholder="ناو یان کۆد"></label>'+
+  '<label>ڕیزکردن<select data-chg="rep" data-k="sort">'+opt('course','بەپێی وانە',R.sort)+opt('name','بەپێی ناو',R.sort)+opt('abs','زۆرترین غیاب',R.sort)+'</select></label></div>'+
+  '<div class="row"><button class="btn sec" data-act="csv">⬇️ دەرهێنان بۆ Excel (CSV)</button><button class="btn" data-act="print">🖨️ چاپکردن</button></div></div>'+
+  '<div id="rep-out">'+repOut(computeRows(R))+'</div>';
+}
+
+/* ---------- تۆماری ڕۆژانە ---------- */
+function sessionsBody(){
+  const cs=myCourses(),ids=new Set(cs.map(c=>c.id)),f=UI.sess.course;
+  let recs=DB.records.filter(r=>ids.has(r.courseId)&&(!f||r.courseId===f));
+  if(!isAdmin())recs=recs.filter(r=>{const c=getCourse(r.courseId);return c.type==='theory'||(c.groupTeachers||{})[r.group]===SESSION.id});
+  recs.sort((a,b)=>b.date.localeCompare(a.date)||(b.savedAt||0)-(a.savedAt||0));
+  return '<div class="card no-print"><label style="margin:0">وانە<select data-chg="sess"><option value="">هەموو وانەکان</option>'+cs.map(c=>'<option value="'+c.id+'"'+(c.id===f?' selected':'')+'>'+esc(c.name)+'</option>').join('')+'</select></label></div>'+
+  '<div class="card tbl"><table><thead><tr><th>بەروار</th><th>ڕۆژ</th><th>وانە</th><th>گروپ</th><th>مامۆستا</th><th>غایب</th><th>تۆمارکەر</th><th class="no-print"></th></tr></thead><tbody>'+
+  (recs.slice(0,500).map(r=>{const c=getCourse(r.courseId);return '<tr><td dir="ltr" style="text-align:right">'+r.date+'</td><td>'+dayName(r.date)+'</td><td>'+esc(c.name)+'<small>'+typeName(c.type)+'</small></td><td>'+esc(r.group||'—')+'</td><td>'+esc(teacherOf(c,r.group))+'</td><td><b>'+r.absent.length+'</b></td><td>'+esc(r.savedBy||'')+'</td><td class="no-print"><button class="btn sm sec" data-act="openSess" data-c="'+r.courseId+'" data-g="'+esc(r.group||'')+'" data-d="'+r.date+'">کردنەوە / دەستکاری</button></td></tr>'}).join('')||'<tr><td colspan="8" class="empty">هێشتا هیچ غیابێک تۆمار نەکراوە</td></tr>')+'</tbody></table></div>';
+}
+
+/* ---------- مامۆستایان ---------- */
+function teacherCourses(tid){
+  const o=[];
+  DB.courses.forEach(c=>{
+    if(c.type==='theory'&&c.teacherId===tid)o.push(c.name+' (تیۆری)');
+    if(c.type==='practical')Object.keys(c.groupTeachers||{}).forEach(g=>{if(c.groupTeachers[g]===tid)o.push(c.name+' — گروپ '+g)});
+  });
+  return o;
+}
+function teachersBody(){
+  return '<div class="card"><h3>➕ مامۆستای نوێ</h3><form data-form="teacher" class="row"><label class="grow">ناوی مامۆستا<input name="name" required></label><label class="grow">ناوی بەکارهێنەر (ئینگلیزی)<input name="u" required dir="ltr"></label><label class="grow">پاسۆرد<input name="p" id="t-pw" required dir="ltr" value="'+randPw()+'"></label><button type="button" class="btn" data-act="genpw">پاسۆردی هەڕەمەکی</button><button class="btn pri">زیادکردن</button></form><div class="hint">پاسۆرد پاش دروستکردن بە شێوەی کۆدکراو پاشەکەوت دەکرێت و ناتوانرێت ببینرێتەوە — تەنها دەتوانیت پاسۆردی نوێ دابنێیت.</div></div>'+
+  '<div class="card tbl"><table><thead><tr><th>ناو</th><th>ناوی بەکارهێنەر</th><th>وانەکانی</th><th></th></tr></thead><tbody>'+
+  (DB.teachers.slice().sort(byName).map(t=>'<tr><td class="nm">'+esc(t.name)+'</td><td dir="ltr" style="text-align:right">'+esc(t.username)+'</td><td>'+(teacherCourses(t.id).map(esc).join('<br>')||'<span class="mut">هیچ وانەیەک نییە</span>')+'</td><td style="white-space:nowrap"><button class="btn sm" data-act="editT" data-id="'+t.id+'">دەستکاری</button> <button class="btn sm sec" data-act="pwT" data-id="'+t.id+'">پاسۆرد</button> <button class="btn sm danger" data-act="delT" data-id="'+t.id+'">سڕینەوە</button></td></tr>').join('')||'<tr><td colspan="4" class="empty">هێشتا مامۆستایەک زیاد نەکراوە</td></tr>')+'</tbody></table></div>';
+}
+
+/* ---------- خوێندکاران ---------- */
+function studentsBody(){
+  const F=UI.sf,q=F.q.trim().toLowerCase();
+  const l=DB.students.filter(s=>(!F.stage||String(s.stage)===F.stage)&&(!q||s.name.toLowerCase().includes(q)||String(s.code).toLowerCase().includes(q))).sort((a,b)=>a.stage-b.stage||coll.compare(a.group||'',b.group||'')||byName(a,b));
+  return '<div class="card"><h3>➕ خوێندکاری نوێ</h3><form data-form="student" class="row"><label>کۆد / ژمارە<input name="code" required dir="ltr"></label><label class="grow">ناوی خوێندکار<input name="name" required></label><label>قۆناغ<select name="stage">'+stageOptions(F.stage||1)+'</select></label><label>گروپ (بۆ پراکتیکی)<input name="group" placeholder="A" style="width:110px"></label><button class="btn pri">زیادکردن</button></form></div>'+
+  '<div class="card"><h3>📋 زیادکردنی کۆمەڵ (لە Excel کۆپی بکە)</h3><form data-form="bulk"><div class="row"><label>قۆناغی بنەڕەتی<select name="stage">'+stageOptions(F.stage||1)+'</select></label></div><label>هەر دێڕێک خوێندکارێکە: <b>کۆد , ناو , قۆناغ , گروپ</b> (قۆناغ و گروپ ئارەزوومەندانەن. ئەگەر تەنها ناو بێت، کۆد خۆکار دروست دەبێت)<textarea name="t" placeholder="1001, ناوی خوێندکار, 1, A"></textarea></label><button class="btn pri">هێنان</button></form></div>'+
+  '<div class="card"><div class="row"><label>قۆناغ<select data-chg="sf" data-k="stage">'+stageOptions(F.stage,true)+'</select></label><label class="grow">گەڕان<input data-part="sf" value="'+esc(F.q)+'" placeholder="ناو یان کۆد"></label><span class="chip">ژمارە: <b id="sf-n">'+l.length+'</b></span></div></div>'+
+  '<div class="card tbl" id="sf-out">'+stuTable(l)+'</div>';
+}
+function stuTable(l){
+  return '<table><thead><tr><th>#</th><th>کۆد</th><th>ناو</th><th>قۆناغ</th><th>گروپ</th><th></th></tr></thead><tbody>'+
+  (l.slice(0,600).map((s,i)=>'<tr><td class="n">'+(i+1)+'</td><td>'+esc(s.code)+'</td><td class="nm">'+esc(s.name)+'</td><td>'+s.stage+'</td><td>'+esc(s.group||'—')+'</td><td style="white-space:nowrap"><button class="btn sm" data-act="editS" data-id="'+s.id+'">دەستکاری</button> <button class="btn sm danger" data-act="delS" data-id="'+s.id+'">سڕینەوە</button></td></tr>').join('')||'<tr><td colspan="6" class="empty">هیچ خوێندکارێک نییە</td></tr>')+'</tbody></table>';
+}
+
+/* ---------- وانەکان ---------- */
+function coursesBody(){
+  const cf=UI.cf=UI.cf||{id:'',name:'',type:'theory',stage:1,teacherId:'',gt:{}};
+  const ts=DB.teachers.slice().sort(byName),tsel=(v,k)=>'<select data-chg="cf" data-k="'+k+'"><option value="">— دیاری نەکراو —</option>'+ts.map(t=>'<option value="'+t.id+'"'+(t.id===v?' selected':'')+'>'+esc(t.name)+'</option>').join('')+'</select>';
+  const groups=groupsOfStage(cf.stage);
+  const dyn=cf.type==='theory'?'<label>مامۆستای وانە'+tsel(cf.teacherId,'teacherId')+'</label>'
+    :(groups.length?'<div class="card" style="background:#f8fafc"><b>مامۆستا بۆ هەر گروپێک</b>'+groups.map(g=>'<label>گروپ '+esc(g)+tsel(cf.gt[g]||'','gt:'+g)+'</label>').join('')+'</div>':'<div class="alert">هیچ گروپێک بۆ ئەم قۆناغە نییە. سەرەتا لە بەشی «خوێندکاران» گروپ بۆ خوێندکارەکان دیاری بکە.</div>');
+  return '<div class="card"><h3>'+(cf.id?'✏️ دەستکاری وانە':'➕ وانەی نوێ')+'</h3><form data-form="course"><div class="row"><label class="grow">ناوی وانە<input name="name" data-part="cf" data-k="name" value="'+esc(cf.name)+'" required></label>'+
+  '<label>جۆر<select data-chg="cf" data-k="type"><option value="theory"'+(cf.type==='theory'?' selected':'')+'>تیۆری (هەموو ناوەکان)</option><option value="practical"'+(cf.type==='practical'?' selected':'')+'>پراکتیکی (بە گروپ)</option></select></label>'+
+  '<label>قۆناغ<select data-chg="cf" data-k="stage">'+stageOptions(cf.stage)+'</select></label></div>'+dyn+
+  '<div class="row"><button class="btn pri">'+(cf.id?'پاشەکەوتکردنی گۆڕانکاری':'زیادکردنی وانە')+'</button>'+(cf.id?'<button type="button" class="btn" data-act="cancelCf">هەڵوەشاندنەوە</button>':'')+'</div></form></div>'+
+  '<div class="card tbl"><table><thead><tr><th>وانە</th><th>جۆر</th><th>قۆناغ</th><th>مامۆستا</th><th></th></tr></thead><tbody>'+
+  (DB.courses.slice().sort((a,b)=>a.stage-b.stage||byName(a,b)).map(c=>'<tr><td class="nm">'+esc(c.name)+'</td><td>'+typeName(c.type)+'</td><td>'+c.stage+'</td><td>'+(c.type==='theory'?esc(teacherOf(c)):Object.keys(c.groupTeachers||{}).sort(coll.compare).map(g=>'گروپ '+esc(g)+': '+esc(teacherOf(c,g))).join('<br>')||'—')+'</td><td style="white-space:nowrap"><button class="btn sm" data-act="editC" data-id="'+c.id+'">دەستکاری</button> <button class="btn sm danger" data-act="delC" data-id="'+c.id+'">سڕینەوە</button></td></tr>').join('')||'<tr><td colspan="5" class="empty">هێشتا وانەیەک زیاد نەکراوە</td></tr>')+'</tbody></table></div>';
+}
+
+/* ---------- ڕێکخستن و داتا ---------- */
+function settingsBody(){
+  const S=DB.settings;
+  return '<div class="grid2"><div class="card"><h3>⚙️ ڕێکخستنی گشتی</h3><form data-form="settings"><label>ناوی کۆلێج<input name="college" value="'+esc(S.college)+'"></label><label>ناوی بەش<input name="title" value="'+esc(S.title)+'"></label>'+
+  '<div class="row"><label>ڕێژەی هەر غیابێک (%)<input name="pct" type="number" min="1" max="100" value="'+S.pct+'" style="width:110px"></label><label>ئاگاداری لە (غیاب)<input name="warn" type="number" min="1" value="'+S.warn+'" style="width:110px"></label><label>کەوتن لە (غیاب)<input name="fail" type="number" min="1" value="'+S.fail+'" style="width:110px"></label><label>ژمارەی قۆناغەکان<input name="stages" type="number" min="1" max="6" value="'+S.stages+'" style="width:110px"></label></div><button class="btn pri">پاشەکەوتکردن</button></form></div>'+
+  '<div class="card"><h3>🔑 هەژماری سەرۆکی بەش</h3><form data-form="acct"><label>ناوی بەکارهێنەر<input name="u" value="'+esc(DB.admin.username)+'" dir="ltr" required></label><label>پاسۆردی نوێ (بەتاڵ = نەگۆڕێت)<input name="p" type="password" dir="ltr" autocomplete="new-password"></label><button class="btn pri">پاشەکەوتکردن</button></form></div></div>'+
+  '<div class="card"><h3>💾 پاشەکەوت و ناردنی داتا</h3><div class="row">'+
+  '<button class="btn pri" data-act="exBackup">⬇️ پاشەکەوتی تەواو (JSON)</button><button class="btn" data-act="restore">⬆️ گەڕاندنەوەی پاشەکەوت</button><button class="btn sec" data-act="importMerge">📥 هێنانی غیاباتی مامۆستا (یەکخستن)</button></div>'+
+  (ONLINE?'':'<div class="row" style="margin-top:10px"><button class="btn sec" data-act="exTeacherHtml">📤 کۆپیی مامۆستایان (HTML)</button><button class="btn sec" data-act="exTeacherJson">📤 داتای نوێ بۆ مامۆستایان (JSON)</button><button class="btn sec" data-act="exStudentHtml">📤 کۆپیی خوێندکاران (HTML)</button></div>')+
+  (ONLINE?'<div class="hint">🌐 <b>سیستەمەکە ئۆنلاینە.</b> هەموو داتاکان لەناو Google Sheet پاشەکەوت دەکرێن و مامۆستایان و خوێندکاران هەمان لینک بەکاردەهێنن. پێویست بە ناردنی فایل نییە. «پاشەکەوتی تەواو» بۆ نوسخەی یەدەگە.</div></div>':'<div class="hint"><b>چۆن کار دەکات؟</b> داتا لەناو وێبگەڕی هەر ئامێرێکدا پاشەکەوت دەبێت. بۆ مامۆستایان «کۆپیی مامۆستایان» بنێرە (ئەوان تەنها وانەی خۆیان دەبینن). دوای ئەوەی غیاب وەردەگرن، لە بەشی «ناردنی غیابات» فایلێک دەنێرنەوە و تۆ لێرە بە «هێنانی غیاباتی مامۆستا» یەکی دەخەیتەوە. «کۆپیی خوێندکاران» وێنەیەکی ئێستای داتایە بۆ بینینی ڕێژەی غیاب (هەر جارێک نوێی بکەرەوە و دووبارە بینێرە). خوێندکار بە کۆدەکەی دەچێتە ژوورەوە؛ کۆدەکان کۆدکراون بەڵام ناوەکان لەناو فایلەکەدان.</div></div>')+
+  '<div class="card"><h3>🧹 وەرزی نوێ</h3><p class="mut" style="margin-top:0">هەموو تۆماری غیاب و نمرەکان دەسڕێتەوە (خوێندکار و مامۆستا و وانەکان دەمێننەوە). پێشتر پاشەکەوتێک خۆکار دابەزێنراوە.</p><button class="btn danger" data-act="reset">سڕینەوەی هەموو غیابەکان و دەستپێکردنی وەرزی نوێ</button></div>';
+}
+function dataBody(){
+  return '<div class="card"><h3>📤 ناردنی غیابات بۆ سەرۆکی بەش</h3><p>دوای وەرگرتنی غیاب، ئەم فایلە دابەزێنە و بیدە بە سەرۆکی بەش (واتس‌ئاپ، ئیمەیڵ، ...).</p><button class="btn pri" data-act="exTeacherJson">⬇️ دابەزاندنی فایلی غیابەکانم</button></div>'+
+  '<div class="card"><h3>📥 وەرگرتنی داتای نوێ لە سەرۆکی بەش</h3><p>ئەگەر سەرۆکی بەش وانە یان خوێندکاری گۆڕی و فایلێکی نوێی ناردبوو، لێرە بیهێنە.</p><button class="btn" data-act="importMerge">هێنانی فایل</button></div>';
+}
+const BODY={grades:gradesBody,gsum:gsumBody,home:homeBody,attend:attendBody,report:reportBody,sessions:sessionsBody,teachers:teachersBody,students:studentsBody,courses:coursesBody,settings:settingsBody,data:dataBody};
+
+/* ================= نمرەکان ================= */
+const GT=[['seminar','سیمینار'],['quiz','کویز'],['assignment','ئەسایمێنت'],['report','ڕاپۆرت']];
+const gtName=k=>(GT.find(x=>x[0]===k)||['',k])[1];
+const gk=g=>g.courseId+'|'+g.sid+'|'+g.type+'|'+g.date;
+const num=n=>Number.isInteger(n)?String(n):String(Math.round(n*100)/100);
+const liveGrades=()=>(DB.grades||[]).filter(g=>g.score!=null);
+const meanOf=a=>a&&a.length?a.reduce((t,x)=>t+x.v,0)/a.length:null;
+function gradeStats(from,to){
+  const ix={};
+  liveGrades().forEach(g=>{
+    if(from&&g.date<from)return;if(to&&g.date>to)return;
+    const k=g.courseId+'|'+g.sid,o=ix[k]=ix[k]||{};
+    (o[g.type]=o[g.type]||[]).push({d:g.date,v:g.score});
+  });
+  return ix;
+}
+function gMeanText(sid){
+  const G=UI.gr,a=(G.prev[sid]||[]).slice(),raw=G.vals[sid],v=parseFloat(raw);
+  if(raw!==undefined&&raw!==''&&!isNaN(v))a.push(v);
+  return a.length?num(a.reduce((t,x)=>t+x,0)/a.length)+' ('+a.length+' نمرە)':'—';
+}
+function gRow(s,i){
+  const G=UI.gr,v=G.vals[s.id];
+  return '<tr><td class="n">'+(i+1)+'</td><td class="nm">'+esc(s.name)+'</td><td class="mut">'+esc(s.code)+'</td>'+
+  '<td><input class="gin" type="number" step="any" min="0" inputmode="decimal" dir="ltr" data-part="gr" data-sid="'+s.id+'" value="'+esc(v==null?'':v)+'"></td>'+
+  '<td class="mut">'+(G.prev[s.id]||[]).length+' نمرەی پێشوو</td><td class="mcell"><b id="gm-'+s.id+'">'+gMeanText(s.id)+'</b></td></tr>';
+}
+function gradesBody(){
+  const courses=myCourses();
+  if(!courses.length)return '<div class="card empty">'+(isAdmin()?'هیچ وانەیەک تۆمار نەکراوە. سەرەتا لە بەشی «وانەکان» وانە زیاد بکە.':'هیچ وانەیەکت بۆ دیاری نەکراوە. داوا لە سەرۆکی بەش بکە وانەکانت بۆ دیاری بکات.')+'</div>';
+  const G=UI.gr=UI.gr||{courseId:'',group:'',type:'quiz',date:today(),vals:{},key:null,dirty:false};
+  if(!courses.some(c=>c.id===G.courseId)){G.courseId=courses[0].id;G.group=''}
+  const c=getCourse(G.courseId);let groups=[];
+  if(c.type==='practical'){groups=myGroups(c);if(!groups.includes(G.group))G.group=groups[0]||''}else G.group='';
+  const list=c.type==='practical'&&!G.group?[]:courseStudents(c,G.group||null);
+  const key=[G.courseId,G.group,G.type,G.date].join('|');
+  const cur={};
+  liveGrades().forEach(g=>{if(g.courseId===c.id&&g.type===G.type&&g.date===G.date)cur[g.sid]=g});
+  if(G.key!==key){G.vals={};list.forEach(s=>{if(cur[s.id])G.vals[s.id]=String(cur[s.id].score)});G.key=key;G.dirty=false}
+  G.list=list;G.prev={};
+  liveGrades().forEach(g=>{if(g.courseId===c.id&&g.type===G.type&&g.date!==G.date)(G.prev[g.sid]=G.prev[g.sid]||[]).push(g.score)});
+  const loaded=Object.keys(cur).length>0;
+  return '<div class="datebar"><span class="dl">📅 بەرواری نمرە</span><input type="date" id="gr-date" data-chg="gr" value="'+G.date+'"><span class="dn">'+dayName(G.date)+'</span>'+(loaded?'<span class="tag">پێشتر تۆمارکراوە — دەتوانیت دەستکاری بکەیت</span>':'')+'</div>'+
+  '<div class="card"><div class="row"><label class="grow">وانە<select id="gr-course" data-chg="gr">'+courses.map(x=>'<option value="'+x.id+'"'+(x.id===c.id?' selected':'')+'>'+esc(x.name)+' — '+typeName(x.type)+' — '+stageName(x.stage)+'</option>').join('')+'</select></label>'+
+  (c.type==='practical'?'<label>گروپ<select id="gr-group" data-chg="gr">'+groups.map(g=>'<option'+(g===G.group?' selected':'')+' value="'+esc(g)+'">'+esc(g)+'</option>').join('')+'</select></label>':'')+
+  '<label>جۆری نمرە<select id="gr-type" data-chg="gr">'+GT.map(t=>'<option value="'+t[0]+'"'+(t[0]===G.type?' selected':'')+'>'+t[1]+'</option>').join('')+'</select></label></div>'+
+  '<div class="chips"><span class="chip">کۆی خوێندکار: <b>'+list.length+'</b></span><span class="chip ok">'+gtName(G.type)+'</span><span class="chip">'+(c.type==='theory'?'تیۆری — '+stageName(c.stage):'پراکتیکی — گروپ '+esc(G.group))+'</span></div>'+
+  '<div class="row"><button class="btn pri" data-act="saveGr">💾 پاشەکەوتکردنی نمرەکان</button></div>'+
+  '<div class="hint">نمرەی هەر خوێندکارێک بنووسە. خانەی بەتاڵ تۆمار ناکرێت (یان نمرەی پێشووی ئەو بەروارە دەسڕێتەوە). هەر جارێک بە بەرواری جیاواز نمرە دابنێیت، لە «کۆی نمرەکان» هەموویان کۆدەکرێنەوە و دابەش دەکرێن (mean).</div></div>'+
+  '<div class="card tbl"><table><thead><tr><th>#</th><th>ناوی خوێندکار</th><th>کۆد</th><th>نمرە</th><th>پێشتر</th><th>mean (لەگەڵ ئەم نمرەیە)</th></tr></thead><tbody>'+
+  (list.map(gRow).join('')||'<tr><td colspan="6" class="empty">هیچ خوێندکارێک نییە'+(c.type==='practical'&&!groups.length?' — هیچ گروپێک بۆ ئەم وانەیە دیاری نەکراوە':'')+'</td></tr>')+'</tbody></table></div>';
+}
+
+function gsumRows(f){
+  const ix=gradeStats(f.from,f.to),q=(f.q||'').trim().toLowerCase(),out=[];
+  myCourses().forEach(c=>{
+    if(f.stage&&String(c.stage)!==String(f.stage))return;
+    if(f.course&&c.id!==f.course)return;
+    courseStudents(c,null).forEach(s=>{
+      if(q&&!(s.name.toLowerCase().includes(q)||String(s.code).toLowerCase().includes(q)))return;
+      out.push({s,c,o:ix[c.id+'|'+s.id]||{}});
+    });
+  });
+  return out;
+}
+function gCell(a){return a&&a.length?'<b>'+num(meanOf(a))+'</b><small>'+a.length+' نمرە</small>':'<span class="mut">—</span>'}
+function gsumOut(rows){
+  return '<div class="chips"><span class="chip">ڕیزەکان: <b>'+rows.length+'</b></span></div>'+
+  '<div class="card tbl"><table><thead><tr><th>#</th><th>ناوی خوێندکار</th><th>کۆد</th><th>قۆناغ</th><th>گروپ</th><th>وانە</th>'+GT.map(t=>'<th>'+t[1]+'<br><small>mean</small></th>').join('')+'</tr></thead><tbody>'+
+  (rows.map((r,i)=>'<tr class="clk" data-act="gdetail" data-sid="'+r.s.id+'" data-cid="'+r.c.id+'"><td class="n">'+(i+1)+'</td><td class="nm">'+esc(r.s.name)+'</td><td>'+esc(r.s.code)+'</td><td>'+r.s.stage+'</td><td>'+esc(r.s.group||'—')+'</td><td>'+esc(r.c.name)+'<small>'+typeName(r.c.type)+'</small></td>'+GT.map(t=>'<td class="mcell">'+gCell(r.o[t[0]])+'</td>').join('')+'</tr>').join('')||'<tr><td colspan="10" class="empty">هیچ ئەنجامێک نییە</td></tr>')+'</tbody></table></div>';
+}
+function gsumBody(){
+  const R=UI.gsm,cs=myCourses().filter(c=>!R.stage||String(c.stage)===String(R.stage));
+  if(R.course&&!cs.some(c=>c.id===R.course))R.course='';
+  const opt=(v,t,s)=>'<option value="'+v+'"'+(s===v?' selected':'')+'>'+t+'</option>';
+  return '<div class="print-only"><h2>'+esc(DB.settings.college)+' — '+esc(DB.settings.title)+'</h2><div>کۆی نمرەکان — '+today()+'</div></div>'+
+  '<div class="card no-print"><div class="filters">'+
+  '<label>قۆناغ<select data-chg="gsm" data-k="stage">'+stageOptions(R.stage,true)+'</select></label>'+
+  '<label>وانە<select data-chg="gsm" data-k="course">'+opt('','هەموو وانەکان',R.course)+cs.map(c=>opt(c.id,esc(c.name)+' ('+typeName(c.type)+')',R.course)).join('')+'</select></label>'+
+  '<label>لە بەرواری<input type="date" data-chg="gsm" data-k="from" value="'+R.from+'"></label>'+
+  '<label>تا بەرواری<input type="date" data-chg="gsm" data-k="to" value="'+R.to+'"></label>'+
+  '<label>گەڕان<input data-part="gsm" data-k="q" value="'+esc(R.q)+'" placeholder="ناو یان کۆد"></label></div>'+
+  '<div class="row"><button class="btn sec" data-act="gcsv">⬇️ دەرهێنان بۆ Excel (CSV)</button><button class="btn" data-act="print">🖨️ چاپکردن</button></div>'+
+  '<div class="hint">هەر ستوونێک mean ـی ئەو جۆرە نمرەیە: کۆی نمرەکان ÷ ژمارەی نمرەکان. بۆ نمونە (٤ + ٣ + ٤ + ٥) ÷ ٤ = ٤. کلیک لەسەر ڕیزێک بکە بۆ بینینی نمرەکان و بەروارەکان.</div></div>'+
+  '<div id="gsm-out">'+gsumOut(gsumRows(R))+'</div>';
+}
+
+/* ================= هەناردە ================= */
+function snapshot(kind){
+  const b={v:1,cfgStamp:DB.cfgStamp,epoch:DB.epoch,settings:DB.settings,courses:DB.courses,records:DB.records};
+  if(kind==='teacher')return Object.assign(b,{lockedCopy:true,grades:DB.grades||[],teachers:DB.teachers,students:DB.students});
+  return Object.assign(b,{studentOnly:true,grades:liveGrades().map(g=>({courseId:g.courseId,sid:g.sid,type:g.type,date:g.date,score:g.score})),teachers:[],students:DB.students.map(s=>({id:s.id,ch:H(String(s.code)),name:s.name,stage:s.stage,group:s.group}))});
+}
+function buildHTML(snap){
+  const cl=document.documentElement.cloneNode(true);
+  cl.querySelector('#app').innerHTML='';cl.querySelector('#modal').innerHTML='';
+  const t=cl.querySelector('#toast');t.textContent='';t.className='';
+  cl.querySelector('#snapdata').textContent=JSON.stringify(snap).replace(/</g,'\\u003c');
+  return '<!DOCTYPE html>\n'+cl.outerHTML;
+}
+const stamp=()=>today();
+
+/* ================= ڕووداوەکان ================= */
+const ACTS={},FORMS={},CHG={},INP={};
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-act]');
+  if(a){ACTS[a.dataset.act]&&ACTS[a.dataset.act](a,e);return}
+  const tr=e.target.closest('#att-body tr[data-sid]');if(tr)ACTS.tog(tr);
+});
+document.addEventListener('submit',e=>{const f=e.target.closest('[data-form]');if(f){e.preventDefault();FORMS[f.dataset.form](f)}});
+document.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.chg;if(k&&CHG[k])CHG[k](e.target)});
+document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.part;if(k&&INP[k])INP[k](e.target)});
+window.addEventListener('beforeunload',e=>{if(UI.att&&UI.att.dirty){e.preventDefault();e.returnValue=''}});
+
+FORMS.login=f=>{
+  const u=f.elements.u.value.trim().toLowerCase(),p=f.elements.p.value;
+  if(ONLINE)return onlineLogin(f,u,p);
+  if(DB.admin&&u===DB.admin.username&&H(p)===DB.admin.pw)SESSION={role:'admin',name:'سەرۆکی بەش'};
+  else{const t=DB.teachers.find(t=>t.username===u&&t.pw===H(p));if(t)SESSION={role:'teacher',id:t.id,name:t.name}}
+  if(!SESSION){toast('ناوی بەکارهێنەر یان پاسۆرد هەڵەیە',true);return}
+  try{sessionStorage.setItem('nurs_sess',JSON.stringify(SESSION))}catch(e){}
+  UI.tab=isAdmin()?'home':'attend';UI.att=null;render();
+};
+ACTS.logout=()=>{SESSION=null;UI.att=null;UI.gr=null;try{sessionStorage.removeItem('nurs_sess')}catch(e){}if(ONLINE){DB=baseDB();LOADED=false;PENDING=false;try{localStorage.removeItem(KEY2)}catch(e){}}render()};
+ACTS.guest=()=>{SESSION={role:'guest'};UI.gs=null;UI.gmsg='';render()};
+ACTS.toLogin=()=>{SESSION=null;if(ONLINE)DB=baseDB();render()};
+FORMS.lookup=f=>{
+  const c=f.elements.code.value.trim();
+  if(ONLINE)return onlineLookup(f,c);
+  const s=DB.students.find(s=>String(s.code)===c||(s.ch&&s.ch===H(c)));
+  if(s){UI.gs=s;UI.gmsg=''}else{UI.gs=null;UI.gmsg='ئەم کۆدە نەدۆزرایەوە. دڵنیابەرەوە لە کۆدی خوێندکاری.'}
+  render();
+};
+ACTS.tab=a=>{UI.tab=a.dataset.t;render()};
+ACTS.closeM=(a,e)=>{if(a.classList.contains('ov')&&e.target!==a)return;$('#modal').innerHTML=''};
+FORMS.mform=f=>{const r=UI.mcb(Object.fromEntries(new FormData(f)));if(r===false||r==='keep')return;$('#modal').innerHTML=''};
+
+/* غیاب */
+CHG.att=()=>{
+  const A=UI.att,nc=$('#att-course').value;
+  if(nc!==A.courseId){A.courseId=nc;A.group=''}else if($('#att-group'))A.group=$('#att-group').value;
+  A.date=$('#att-date').value||today();
+  if(A.dirty&&!confirm('گۆڕانکارییەکانت پاشەکەوت نەکراون. بەردەوام دەبیت؟'))return render();
+  render();
+};
+ACTS.tog=a=>{
+  const tr=a.closest('tr'),sid=tr.dataset.sid,A=UI.att;
+  if(A.absent.has(sid))A.absent.delete(sid);else A.absent.add(sid);
+  A.dirty=true;
+  const i=[...tr.parentNode.children].indexOf(tr);
+  tr.outerHTML=attRow(A.list[i],i);attSummary();
+};
+ACTS.allPresent=()=>{UI.att.absent=new Set();UI.att.dirty=true;render()};
+ACTS.saveAtt=()=>{
+  const A=UI.att,c=getCourse(A.courseId);if(!c)return;
+  if(!A.list.length){toast('هیچ خوێندکارێک نییە بۆ پاشەکەوتکردن',true);return}
+  if(A.date>today()&&!isAdmin()){toast('ناتوانرێت غیاب بۆ ڕۆژی داهاتوو تۆمار بکرێت',true);return}
+  const rec={id:uid(),courseId:c.id,group:c.type==='practical'?A.group:'',date:A.date,absent:A.list.filter(s=>A.absent.has(s.id)).map(s=>s.id),savedBy:SESSION.name,savedAt:Date.now()};
+  const i=DB.records.findIndex(r=>rk(r)===rk(rec));
+  if(i>=0){rec.id=DB.records[i].id;DB.records[i]=rec}else DB.records.push(rec);
+  save();A.dirty=false;A.loaded=true;toast('غیابەکان پاشەکەوت کران ✓ ('+rec.absent.length+' غایب)');render();
+};
+ACTS.openSess=a=>{UI.att={courseId:a.dataset.c,group:a.dataset.g,date:a.dataset.d,absent:new Set(),loaded:false,key:null,dirty:false};UI.tab='attend';render()};
+CHG.sess=el=>{UI.sess.course=el.value;render()};
+
+/* ڕاپۆرت */
+CHG.rep=el=>{UI.rep[el.dataset.k]=el.value;if(el.dataset.k==='stage')UI.rep.course='';render()};
+INP.rep=el=>{UI.rep[el.dataset.k]=el.value;$('#rep-out').innerHTML=repOut(computeRows(UI.rep))};
+ACTS.goRep=a=>{UI.rep={stage:'',course:'',status:a.dataset.st,q:'',from:'',to:'',sort:'abs'};UI.tab='report';render()};
+ACTS.print=()=>window.print();
+ACTS.csv=()=>{
+  const rows=computeRows(UI.rep);
+  const out=[['#','ناوی خوێندکار','کۆد','قۆناغ','گروپ','وانە','جۆر','غیاب','ڕێژە %','دۆخ']].concat(rows.map((r,i)=>[i+1,r.s.name,r.s.code,r.s.stage,r.s.group||'',r.c.name,typeName(r.c.type),r.a,r.pct,STL[r.st]]));
+  download('absence-report-'+stamp()+'.csv',toCSV(out),'text/csv;charset=utf-8');
+};
+ACTS.detail=a=>{
+  const s=DB.students.find(x=>x.id===a.dataset.sid),c=getCourse(a.dataset.cid);if(!s||!c)return;
+  const d=(absIndex()[c.id+'|'+s.id]||[]).map(x=>x.d).sort();
+  modal('<h3>'+esc(s.name)+'</h3><p class="mut">'+esc(c.name)+' ('+typeName(c.type)+') — '+d.length+' غیاب = '+d.length*DB.settings.pct+'%</p>'+(d.length?'<div class="dts">'+d.map(x=>'<span>'+x+' — '+dayName(x)+'</span>').join('')+'</div>':'<p>هیچ غیابێکی نییە.</p>'));
+};
+
+/* نمرەکان */
+CHG.gr=()=>{
+  const G=UI.gr;
+  if(G.dirty&&!confirm('گۆڕانکارییەکانت پاشەکەوت نەکراون. بەردەوام دەبیت؟'))return render();
+  const nc=$('#gr-course').value;
+  if(nc!==G.courseId){G.courseId=nc;G.group=''}else if($('#gr-group'))G.group=$('#gr-group').value;
+  G.type=$('#gr-type').value;G.date=$('#gr-date').value||today();
+  render();
+};
+INP.gr=el=>{const G=UI.gr;G.vals[el.dataset.sid]=el.value;G.dirty=true;const m=$('#gm-'+el.dataset.sid);if(m)m.textContent=gMeanText(el.dataset.sid)};
+ACTS.saveGr=()=>{
+  const G=UI.gr,c=getCourse(G.courseId);if(!c)return;
+  if(!G.list.length){toast('هیچ خوێندکارێک نییە بۆ پاشەکەوتکردن',true);return}
+  if(G.date>today()&&!isAdmin()){toast('ناتوانرێت نمرە بۆ ڕۆژی داهاتوو تۆمار بکرێت',true);return}
+  DB.grades=DB.grades||[];
+  const ops=[];let bad=0;
+  G.list.forEach(s=>{
+    const raw=String(G.vals[s.id]==null?'':G.vals[s.id]).trim().replace(',','.');
+    const g0={courseId:c.id,sid:s.id,type:G.type,date:G.date};
+    const i=DB.grades.findIndex(x=>gk(x)===gk(g0));
+    if(raw===''){if(i>=0&&DB.grades[i].score!=null)ops.push({i,g0,score:null});return}
+    const v=Number(raw);
+    if(!isFinite(v)||v<0){bad++;return}
+    ops.push({i,g0,score:v});
+  });
+  if(bad){toast('نمرەیەک دروست نییە — تەنها ژمارە بنووسە',true);return}
+  const now=Date.now();let n=0;
+  ops.forEach(o=>{
+    if(o.score!=null)n++;
+    if(o.i>=0){const g=DB.grades[o.i];g.score=o.score;g.savedBy=SESSION.name;g.savedAt=now}
+    else DB.grades.push(Object.assign({id:uid(),score:o.score,savedBy:SESSION.name,savedAt:now},o.g0));
+  });
+  save();G.dirty=false;toast('نمرەکان پاشەکەوت کران ✓ ('+n+' نمرە)');render();
+};
+CHG.gsm=el=>{UI.gsm[el.dataset.k]=el.value;if(el.dataset.k==='stage')UI.gsm.course='';render()};
+INP.gsm=el=>{UI.gsm[el.dataset.k]=el.value;$('#gsm-out').innerHTML=gsumOut(gsumRows(UI.gsm))};
+ACTS.gcsv=()=>{
+  const rows=gsumRows(UI.gsm),h=['#','ناوی خوێندکار','کۆد','قۆناغ','گروپ','وانە','جۆر'];
+  GT.forEach(t=>{h.push(t[1]+' (mean)');h.push(t[1]+' (ژمارە)')});
+  const out=[h].concat(rows.map((r,i)=>{
+    const l=[i+1,r.s.name,r.s.code,r.s.stage,r.s.group||'',r.c.name,typeName(r.c.type)];
+    GT.forEach(t=>{const a=r.o[t[0]];l.push(a?num(meanOf(a)):'');l.push(a?a.length:'')});
+    return l;
+  }));
+  download('grades-report-'+stamp()+'.csv',toCSV(out),'text/csv;charset=utf-8');
+};
+ACTS.gdetail=a=>{
+  const s=DB.students.find(x=>x.id===a.dataset.sid),c=getCourse(a.dataset.cid);if(!s||!c)return;
+  const o=gradeStats(UI.gsm.from,UI.gsm.to)[c.id+'|'+s.id]||{};
+  const body=GT.map(t=>{
+    const arr=(o[t[0]]||[]).slice().sort((x,y)=>x.d.localeCompare(y.d));
+    if(!arr.length)return '<p><b>'+t[1]+':</b> <span class="mut">هیچ نمرەیەک نییە</span></p>';
+    return '<p style="margin-bottom:2px"><b>'+t[1]+'</b> — mean = <b>'+num(meanOf(arr))+'</b></p><div class="fm">('+arr.map(x=>num(x.v)).join(' + ')+') ÷ '+arr.length+' = '+num(meanOf(arr))+'</div><div class="dts">'+arr.map(x=>'<span>'+x.d+' : '+num(x.v)+'</span>').join('')+'</div>';
+  }).join('');
+  modal('<h3>'+esc(s.name)+'</h3><p class="mut">'+esc(c.name)+' ('+typeName(c.type)+')</p>'+body);
+};
+
+/* مامۆستایان */
+ACTS.genpw=()=>{$('#t-pw').value=randPw()};
+function credModal(name,u,p){modal('<h3>زانیاری چوونەژوورەوە</h3><p>مامۆستا: <b>'+esc(name)+'</b></p><p>ناوی بەکارهێنەر: <b dir="ltr">'+esc(u)+'</b></p><p>پاسۆرد: <b dir="ltr">'+esc(p)+'</b></p><p class="mut">ئەم پاسۆردە تەنها ئێستا پیشان دەدرێت. بینووسەرەوە و بیدە بە مامۆستا.</p>')}
+FORMS.teacher=f=>{
+  const name=f.elements.name.value.trim(),u=f.elements.u.value.trim().toLowerCase(),p=f.elements.p.value;
+  if(p.length<4){toast('پاسۆرد دەبێت لانی کەم ٤ پیت بێت',true);return}
+  if(u===DB.admin.username||DB.teachers.some(t=>t.username===u)){toast('ئەم ناوی بەکارهێنەرە پێشتر هەیە',true);return}
+  DB.teachers.push({id:uid(),name,username:u,pw:H(p)});cfg();render();credModal(name,u,p);
+};
+ACTS.editT=a=>{
+  const t=getTeacher(a.dataset.id);
+  formModal('دەستکاری مامۆستا',[{k:'name',label:'ناو',value:t.name,req:1},{k:'u',label:'ناوی بەکارهێنەر',value:t.username,req:1}],v=>{
+    const u=v.u.trim().toLowerCase();
+    if(u===DB.admin.username||DB.teachers.some(x=>x.id!==t.id&&x.username===u)){toast('ئەم ناوی بەکارهێنەرە پێشتر هەیە',true);return false}
+    t.name=v.name.trim();t.username=u;cfg();render();
+  });
+};
+ACTS.pwT=a=>{
+  const t=getTeacher(a.dataset.id);
+  formModal('پاسۆردی نوێ بۆ '+t.name,[{k:'p',label:'پاسۆردی نوێ',value:randPw(),req:1}],v=>{
+    if(v.p.length<4){toast('پاسۆرد زۆر کورتە',true);return false}
+    t.pw=H(v.p);cfg();render();credModal(t.name,t.username,v.p);return 'keep';
+  });
+};
+ACTS.delT=a=>{
+  const t=getTeacher(a.dataset.id);
+  if(!confirm('مامۆستا «'+t.name+'» دەسڕدرێتەوە و لە وانەکان لادەبرێت. دڵنیایت؟'))return;
+  DB.teachers=DB.teachers.filter(x=>x.id!==t.id);
+  DB.courses.forEach(c=>{if(c.teacherId===t.id)c.teacherId='';Object.keys(c.groupTeachers||{}).forEach(g=>{if(c.groupTeachers[g]===t.id)delete c.groupTeachers[g]})});
+  cfg();render();
+};
+
+/* خوێندکاران */
+function stageOK(n){return n>=1&&n<=DB.settings.stages}
+FORMS.student=f=>{
+  const code=f.elements.code.value.trim(),name=f.elements.name.value.trim(),stage=+f.elements.stage.value,group=f.elements.group.value.trim();
+  if(DB.students.some(s=>String(s.code)===code)){toast('ئەم کۆدە پێشتر هەیە',true);return}
+  DB.students.push({id:uid(),code,name,stage,group});UI.sf.stage=String(stage);cfg();toast('زیادکرا ✓');render();
+};
+FORMS.bulk=f=>{
+  const def=+f.elements.stage.value;let add=0,upd=0,auto=0;
+  f.elements.t.value.split(/\r?\n/).forEach(line=>{
+    line=line.trim();if(!line)return;
+    const p=line.split(/\t|,|،|;|\|/).map(x=>x.trim());
+    let code,name,stage=def,group='';
+    if(p.length===1){name=p[0]}else{code=p[0];name=p[1];if(p[2]&&stageOK(parseInt(p[2])))stage=parseInt(p[2]);group=p[3]||''}
+    if(!name)return;
+    if(!code){do{auto++;code=stage+String(auto).padStart(3,'0')}while(DB.students.some(s=>String(s.code)===code))}
+    const ex=DB.students.find(s=>String(s.code)===code);
+    if(ex){ex.name=name;ex.stage=stage;if(group)ex.group=group;upd++}else{DB.students.push({id:uid(),code,name,stage,group});add++}
+  });
+  cfg();toast(add+' زیادکرا، '+upd+' نوێکرایەوە');render();
+};
+CHG.sf=el=>{UI.sf.stage=el.value;render()};
+INP.sf=el=>{UI.sf.q=el.value;const q=el.value.trim().toLowerCase(),F=UI.sf;
+  const l=DB.students.filter(s=>(!F.stage||String(s.stage)===F.stage)&&(!q||s.name.toLowerCase().includes(q)||String(s.code).toLowerCase().includes(q))).sort((a,b)=>a.stage-b.stage||coll.compare(a.group||'',b.group||'')||byName(a,b));
+  $('#sf-out').innerHTML=stuTable(l);$('#sf-n').textContent=l.length};
+ACTS.editS=a=>{
+  const s=DB.students.find(x=>x.id===a.dataset.id),st=[];
+  for(let i=1;i<=DB.settings.stages;i++)st.push([i,stageName(i)]);
+  formModal('دەستکاری خوێندکار',[{k:'code',label:'کۆد',value:s.code,req:1},{k:'name',label:'ناو',value:s.name,req:1},{k:'stage',label:'قۆناغ',type:'select',options:st,value:s.stage},{k:'group',label:'گروپ',value:s.group||''}],v=>{
+    if(DB.students.some(x=>x.id!==s.id&&String(x.code)===v.code.trim())){toast('ئەم کۆدە پێشتر هەیە',true);return false}
+    s.code=v.code.trim();s.name=v.name.trim();s.stage=+v.stage;s.group=v.group.trim();cfg();render();
+  });
+};
+ACTS.delS=a=>{
+  const s=DB.students.find(x=>x.id===a.dataset.id);
+  if(!confirm('خوێندکار «'+s.name+'» دەسڕدرێتەوە؟'))return;
+  DB.students=DB.students.filter(x=>x.id!==s.id);DB.grades=(DB.grades||[]).filter(g=>g.sid!==s.id);cfg();render();
+};
+
+/* وانەکان */
+CHG.cf=el=>{
+  const k=el.dataset.k;
+  if(k.startsWith('gt:'))UI.cf.gt[k.slice(3)]=el.value;
+  else UI.cf[k]=k==='stage'?+el.value:el.value;
+  render();
+};
+INP.cf=el=>{UI.cf.name=el.value};
+FORMS.course=f=>{
+  const cf=UI.cf,name=f.elements.name.value.trim();if(!name)return;
+  const c={id:cf.id||uid(),name,type:cf.type,stage:cf.stage};
+  if(cf.type==='theory'){c.teacherId=cf.teacherId||'';c.groupTeachers={}}
+  else{c.teacherId='';c.groupTeachers={};Object.keys(cf.gt).forEach(g=>{if(cf.gt[g]&&groupsOfStage(cf.stage).includes(g))c.groupTeachers[g]=cf.gt[g]})}
+  const i=DB.courses.findIndex(x=>x.id===c.id);
+  if(i>=0)DB.courses[i]=c;else DB.courses.push(c);
+  UI.cf=null;cfg();toast('وانە پاشەکەوت کرا ✓');render();
+};
+ACTS.editC=a=>{const c=getCourse(a.dataset.id);UI.cf={id:c.id,name:c.name,type:c.type,stage:c.stage,teacherId:c.teacherId||'',gt:Object.assign({},c.groupTeachers)};render();window.scrollTo(0,0)};
+ACTS.cancelCf=()=>{UI.cf=null;render()};
+ACTS.delC=a=>{
+  const c=getCourse(a.dataset.id);
+  if(!confirm('وانەی «'+c.name+'» و هەموو غیابەکانی دەسڕدرێنەوە. دڵنیایت؟'))return;
+  DB.courses=DB.courses.filter(x=>x.id!==c.id);DB.records=DB.records.filter(r=>r.courseId!==c.id);DB.grades=(DB.grades||[]).filter(g=>g.courseId!==c.id);cfg();render();
+};
+
+/* ڕێکخستن */
+FORMS.settings=f=>{
+  const S=DB.settings,pct=+f.elements.pct.value,warn=+f.elements.warn.value,fail=+f.elements.fail.value,stages=+f.elements.stages.value;
+  if(!(pct>=1&&warn>=1&&fail>=warn&&stages>=1&&stages<=6)){toast('ژمارەکان دروست نین (کەوتن دەبێت لە ئاگاداری کەمتر نەبێت)',true);return}
+  Object.assign(S,{college:f.elements.college.value.trim(),title:f.elements.title.value.trim(),pct,warn,fail,stages});cfg();toast('پاشەکەوت کرا ✓');render();
+};
+FORMS.acct=f=>{
+  const u=f.elements.u.value.trim().toLowerCase(),p=f.elements.p.value;
+  if(DB.teachers.some(t=>t.username===u)){toast('ئەم ناوە بۆ مامۆستایەک بەکارهاتووە',true);return}
+  if(p&&p.length<4){toast('پاسۆرد زۆر کورتە',true);return}
+  DB.admin.username=u;if(p)DB.admin.pw=H(p);cfg();toast('هەژمار نوێکرایەوە ✓');render();
+};
+ACTS.exBackup=()=>download('nursing-attendance-backup-'+stamp()+'.json',JSON.stringify(DB),'application/json');
+ACTS.exTeacherJson=()=>download((isAdmin()?'data-for-teachers-':'my-attendance-')+stamp()+'.json',JSON.stringify(Object.assign(snapshot('teacher'),{from:isAdmin()?'admin':'teacher'})),'application/json');
+ACTS.exTeacherHtml=()=>{download('nursing-attendance-teachers-'+stamp()+'.html',buildHTML(snapshot('teacher')),'text/html;charset=utf-8');toast('ئەم فایلە پاسۆردی کۆدکراوی هەموو مامۆستایان لەخۆ دەگرێت — تەنها بۆ مامۆستایان بینێرە')};
+ACTS.exStudentHtml=()=>download('nursing-attendance-students-'+stamp()+'.html',buildHTML(snapshot('student')),'text/html;charset=utf-8');
+ACTS.importMerge=()=>{UI.impMode='merge';$('#impf').click()};
+ACTS.restore=()=>{UI.impMode='restore';$('#impf').click()};
+ACTS.reset=()=>{
+  if(!confirm('هەموو تۆماری غیاب و نمرەکان دەسڕدرێنەوە. دڵنیایت؟'))return;
+  ACTS.exBackup();DB.records=[];DB.grades=[];DB.epoch++;UI.att=null;save();toast('وەرزی نوێ دەستی پێکرد ✓');render();
+};
+$('#impf').addEventListener('change',e=>{
+  const file=e.target.files[0];e.target.value='';if(!file)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const inc=JSON.parse(rd.result);if(!Array.isArray(inc.records))throw new Error('bad');
+      if(UI.impMode==='restore'){
+        if(!inc.admin||!inc.admin.pw)throw new Error('نەخێر');
+        if(!confirm('هەموو داتای ئێستا بە داتای ئەم فایلە دەگۆڕدرێت. دڵنیایت؟'))return;
+        const pe=DB.epoch;DB=Object.assign(baseDB(),inc);if(ONLINE){DB.epoch=Math.max(pe,DB.epoch||0)+1;DB.cfgStamp=Date.now()}save();toast('داتا گەڕێنرایەوە ✓');render();return;
+      }
+      const pristine=!DB.teachers.length&&!DB.students.length&&!DB.courses.length&&DB.cfgStamp===0;
+      if(pristine&&DB.admin&&inc.lockedCopy){
+        if(!confirm('ئەم ئامێرە وەک ئامێری مامۆستا ڕێکدەخرێت و بەشی سەرۆکی بەش لێرە ناچالاک دەبێت. بەردەوام دەبیت؟'))return;
+        DB.admin=null;
+      }
+      const st=mergeIn(inc);
+      toast('یەکخرا ✓ — '+st.added+' تۆمار زیاد، '+st.updated+' نوێکرایەوە'+(st.cfg?'، داتای بەش نوێکرایەوە':''));
+      render();
+    }catch(err){toast('فایلەکە دروست نییە یان بۆ ئەم کارە نابێت',true)}
+  };
+  rd.readAsText(file);
+});
+
+/* ================= ئۆنلاین (Google Sheet) ================= */
+const KEY2='nursing_online_cache_v1',SYNC={st:'',t:''};
+let LOADED=!ONLINE,QUIET=false,PENDING=false,CHG_N=0,syncBusy=false,syncAgain=false,syncT=null;
+function syncText(){return SYNC.st==='busy'?'⏳ هاوکاتکردن...':SYNC.st==='ok'?'✓ هاوکات کرا '+SYNC.t:SYNC.st==='err'?'⚠️ پەیوەندی نییە — دووبارە هەوڵ دەدرێتەوە':''}
+function syncHTML(){return '<span class="syn" id="syncst">'+syncText()+'</span><button class="btn ghost" data-act="resync" title="هاوکاتکردن">🔄</button>'}
+function setSync(st){SYNC.st=st;if(st==='ok'){const d=new Date();SYNC.t=pad(d.getHours())+':'+pad(d.getMinutes())}const el=$('#syncst');if(el)el.textContent=syncText()}
+async function api(body){
+  const ac=typeof AbortController!=='undefined'?new AbortController():null,tm=ac&&setTimeout(()=>ac.abort(),40000);
+  try{
+    const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body),signal:ac?ac.signal:undefined});
+    const t=await r.text();
+    try{return JSON.parse(t)}catch(e){const er=new Error('BADRESP');er.snip=t.slice(0,80);throw er}
+  }finally{if(tm)clearTimeout(tm)}
+}
+function netMsg(e){
+  if(e&&e.message==='BADRESP')return 'سێرڤەر وەڵامێکی هەڵەی دایەوە — لە Apps Script: Deploy ▸ Manage deployments ▸ Who has access دەبێت «Anyone» بێت، و دوای هەر گۆڕانکارییەک وەشانی نوێ (New version) دابنێ';
+  if(e&&e.name==='AbortError')return 'سێرڤەر درەنگ وەڵامی دایەوە — دووبارە هەوڵبدەرەوە';
+  return 'پەیوەندی بە سێرڤەرەوە نەکرا (Failed to fetch) — ئینتەرنێت یان لینکی API_URL بپشکنە';
+}
+function pushSoon(d){if(!ONLINE||!SESSION||SESSION.role==='guest')return;clearTimeout(syncT);syncT=setTimeout(doSync,d||1200)}
+function storeSess(){try{sessionStorage.setItem('nurs_sess',JSON.stringify(SESSION))}catch(e){}}
+async function doSync(){
+  if(!ONLINE||!SESSION||SESSION.role==='guest')return;
+  if(syncBusy){syncAgain=true;return}
+  syncBusy=true;setSync('busy');const n=CHG_N;
+  try{
+    const first=!LOADED;
+    const payload=first?null:(isAdmin()?DB:{epoch:DB.epoch,cfgStamp:DB.cfgStamp,records:DB.records,grades:DB.grades||[]});
+    const res=await api({action:first?'login':'sync',u:SESSION.u,ph:SESSION.ph,db:payload});
+    if(!res.ok){
+      if(res.error==='auth'){toast('ناوی بەکارهێنەر یان پاسۆرد گۆڕدراوە — دووبارە بچۆرە ژوورەوە',true);ACTS.logout();return}
+      throw new Error(res.error||'server');
+    }
+    if(first){DB=Object.assign(baseDB(),res.db);LOADED=true;QUIET=true;save();QUIET=false;render()}
+    else{
+      if(isAdmin()&&payload&&payload.admin&&payload.admin.pw&&(payload.admin.pw!==SESSION.ph||payload.admin.username!==SESSION.u)){SESSION.u=String(payload.admin.username).toLowerCase();SESSION.ph=payload.admin.pw;storeSess()}
+      QUIET=true;const st=mergeIn(res.db);QUIET=false;
+      const ae=document.activeElement,busy=(UI.att&&UI.att.dirty)||(UI.gr&&UI.gr.dirty)||$('#modal').innerHTML||(ae&&/INPUT|SELECT|TEXTAREA/.test(ae.tagName));
+      if((st.added||st.updated||st.cfg)&&!busy)render();
+    }
+    if(CHG_N===n)PENDING=false;
+    setSync('ok');
+  }catch(e){QUIET=false;setSync('err')}
+  finally{syncBusy=false;if(syncAgain){syncAgain=false;pushSoon(400)}}
+}
+ACTS.resync=()=>{doSync()};
+async function onlineLogin(f,u,p){
+  const b=f.querySelector('button'),old=b.textContent;b.disabled=true;b.textContent='⏳ ...';
+  try{
+    const ph=H(p),res=await api({action:'login',u,ph});
+    if(!res.ok){toast(res.error==='auth'?'ناوی بەکارهێنەر یان پاسۆرد هەڵەیە':'هەڵەی سێرڤەر: '+res.error,true);return}
+    DB=Object.assign(baseDB(),res.db);LOADED=true;
+    SESSION={role:res.role,id:res.id,name:res.name,u,ph};storeSess();
+    UI.tab=isAdmin()?'home':'attend';UI.att=null;UI.gr=null;
+    QUIET=true;save();QUIET=false;setSync('ok');render();
+  }catch(e){toast(netMsg(e),true)}
+  finally{if(b.isConnected){b.disabled=false;b.textContent=old}}
+}
+async function onlineLookup(f,code){
+  const b=f.querySelector('button'),old=b.textContent;b.disabled=true;b.textContent='⏳';
+  try{
+    const res=await api({action:'student',code});
+    if(res.ok){DB=Object.assign(baseDB(),res.db);UI.gs=res.student;UI.gmsg=''}
+    else{UI.gs=null;UI.gmsg=res.error==='notfound'?'ئەم کۆدە نەدۆزرایەوە. دڵنیابەرەوە لە کۆدی خوێندکاری.':'هەڵەی سێرڤەر: '+res.error}
+    render();
+  }catch(e){UI.gs=null;UI.gmsg='پەیوەندی بە سێرڤەرەوە نەکرا. ئینتەرنێتەکەت بپشکنە.';render()}
+}
+function bootOnline(){
+  DB=baseDB();
+  try{
+    const s=JSON.parse(sessionStorage.getItem('nurs_sess')||'null');
+    if(s&&s.ph&&(s.role==='admin'||s.role==='teacher')){
+      SESSION=s;
+      const c=JSON.parse(localStorage.getItem(KEY2)||'null');
+      if(c){DB=Object.assign(baseDB(),c);LOADED=true}
+    }
+  }catch(e){}
+  render();
+  if(SESSION)doSync();
+  setInterval(()=>{if(SESSION&&SESSION.role!=='guest'&&!document.hidden)doSync()},45000);
+  window.addEventListener('beforeunload',e=>{if(PENDING&&SESSION&&SESSION.role!=='guest'){e.preventDefault();e.returnValue=''}});
+}
+
+/* ================= دەستپێکردن ================= */
+function boot(){
+  if(ONLINE)return bootOnline();
+  let snap=null;
+  try{const t=$('#snapdata').textContent.trim();if(t)snap=JSON.parse(t)}catch(e){}
+  if(snap&&snap.studentOnly){STUDENT_ONLY=true;DB=Object.assign(baseDB(),snap);SESSION={role:'guest'}}
+  else{
+    DB=loadLS();
+    if(!DB)DB=snap?baseDB():freshDB();
+    DB=Object.assign(baseDB(),DB);
+    if(snap)mergeIn(snap);
+    save();
+    try{
+      const s=JSON.parse(sessionStorage.getItem('nurs_sess')||'null');
+      if(s&&s.role==='admin'&&DB.admin)SESSION=s;
+      else if(s&&s.role==='teacher'){const t=getTeacher(s.id);if(t)SESSION={role:'teacher',id:t.id,name:t.name}}
+    }catch(e){}
+  }
+  render();
+}
+boot();
+</script>
+</body>
+</html>
