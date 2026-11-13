@@ -158,7 +158,7 @@ function formModal(title,fields,cb){
 /* ================= داتا ================= */
 const KEY='nursing_attendance_v1';
 const baseDB=()=>({v:1,cfgStamp:0,epoch:0,settings:{college:'کۆلێجی تەکنیکی کەلار',title:'بەشی پەرستاری',pct:3,warn:3,fail:4,stages:4},admin:null,teachers:[],students:[],courses:[],records:[],grades:[]});
-function freshDB(){const d=baseDB();d.admin={username:'admin',pw:H('admin123')};return d}
+function freshDB(){const d=baseDB();d.admin={username:'admin',pw:'cb90ff4862b8cd6e250d612464931a44f2ee76b5944215f1f21cd939a766c0cc'};return d}
 function loadLS(){try{const t=localStorage.getItem(KEY);return t?JSON.parse(t):null}catch(e){return null}}
 let DB,SESSION=null,STUDENT_ONLY=false;
 const UI={gr:null,gsm:{stage:'',course:'',q:'',from:'',to:''},tab:'home',att:null,rep:{stage:'',course:'',status:'',q:'',from:'',to:'',sort:'course'},cf:null,sf:{stage:'',q:''},sess:{course:''},gs:null,gmsg:'',mcb:null};
@@ -178,7 +178,7 @@ const status=a=>a>=DB.settings.fail?'fail':a>=DB.settings.warn?'warn':'ok';
 const getCourse=id=>DB.courses.find(c=>c.id===id);
 const getTeacher=id=>DB.teachers.find(t=>t.id===id);
 const isAdmin=()=>SESSION&&SESSION.role==='admin';
-const isDefaultAdmin=()=>DB.admin&&DB.admin.username==='admin'&&DB.admin.pw===H('admin123');
+const isDefaultAdmin=()=>DB.admin&&DB.admin.username==='admin'&&DB.admin.pw==='cb90ff4862b8cd6e250d612464931a44f2ee76b5944215f1f21cd939a766c0cc';
 
 function mergeIn(inc){
   const st={added:0,updated:0,cfg:false};
@@ -259,7 +259,7 @@ function loginView(){
   '<form data-form="login"><label>ناوی بەکارهێنەر<input name="u" autocomplete="username" required dir="ltr"></label>'+
   '<label>پاسۆرد<input name="p" type="password" autocomplete="current-password" required dir="ltr"></label>'+
   '<button class="btn pri block">چوونەژوورەوە</button></form>'+
-  (isDefaultAdmin()?'<div class="hint">یەکەم جار: ناو <b dir="ltr">admin</b> — پاسۆرد <b dir="ltr">admin123</b> (دوای چوونەژوورەوە بیگۆڕە)</div>':'')+'</section>'+
+  (isDefaultAdmin()?'<div class="hint">پاسۆردی سەرەتایی هێشتا نەگۆڕدراوە — دوای چوونەژوورەوە بیگۆڕە</div>':'')+'</section>'+
   '<section class="card"><h2>🎓 خوێندکار (میوان)</h2><p class="mut" style="margin-top:0">بینینی ڕێژەی غیابەکانت بە کۆدی خوێندکاری</p>'+
   '<button class="btn sec block" data-act="guest">بینینی غیابەکانم</button></section></div>'+
   (ONLINE?'':'<section class="card no-print"><h3>📥 هێنانی فایلی داتا</h3><p class="mut" style="margin-top:0">ئەگەر سەرۆکی بەش فایلی داتای (JSON) ـی بۆ ناردوویت، لێرە بیهێنە.</p>'+
@@ -309,7 +309,7 @@ function render(){
 function homeBody(){
   const rows=computeRows({}),w=rows.filter(r=>r.st==='warn'),f=rows.filter(r=>r.st==='fail');
   const lst=(a,t)=>a.length?'<div class="card tbl"><table><thead><tr><th colspan="4">'+t+' ('+a.length+')</th></tr></thead><tbody>'+a.slice(0,8).map(r=>'<tr class="clk" data-act="detail" data-sid="'+r.s.id+'" data-cid="'+r.c.id+'"><td>'+esc(r.s.name)+'</td><td>'+esc(r.c.name)+'</td><td>'+r.a+' غیاب</td><td>'+r.pct+'%</td></tr>').join('')+'</tbody></table></div>':'';
-  return (isDefaultAdmin()?'<div class="alert">⚠️ پاسۆردی سەرۆکی بەش هێشتا ئەوەی سەرەتاییە (admin123). لە «ڕێکخستن و داتا» بیگۆڕە.</div>':'')+
+  return (isDefaultAdmin()?'<div class="alert">⚠️ پاسۆردی سەرۆکی بەش هێشتا ئەوەی سەرەتاییە. لە «ڕێکخستن و داتا» بیگۆڕە.</div>':'')+
   '<div class="stats"><div class="stat"><b>'+DB.students.length+'</b>خوێندکار</div><div class="stat"><b>'+DB.teachers.length+'</b>مامۆستا</div><div class="stat"><b>'+DB.courses.length+'</b>وانە</div><div class="stat"><b>'+DB.records.length+'</b>جاری غیاب تۆمارکراو</div><div class="stat warn"><b>'+w.length+'</b>ئاگادارکراوە</div><div class="stat fail"><b>'+f.length+'</b>کەوتوو</div></div>'+
   '<div class="row no-print" style="margin-bottom:14px"><button class="btn pri" data-act="goRep" data-st="">هەموو ڕاپۆرتەکان</button><button class="btn danger" data-act="goRep" data-st="fail">تەنها کەوتووەکان</button><button class="btn sec" data-act="goRep" data-st="warn">تەنها ئاگادارکراوەکان</button></div>'+
   lst(f,'کەوتووەکان')+lst(w,'ئاگادارکراوەکان')+
